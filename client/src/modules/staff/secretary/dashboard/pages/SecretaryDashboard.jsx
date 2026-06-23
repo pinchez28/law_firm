@@ -1,0 +1,125 @@
+import {
+  Activity,
+  Bell,
+  CalendarDays,
+  CheckSquare,
+  FileText,
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+import DashboardHero from '@/components/dashboard/DashboardHero';
+import DashboardGrid from '@/components/dashboard/DashboardGrid';
+import DashboardTile from '@/components/dashboard/DashboardTile';
+
+const secretaryTiles = [
+  {
+    title: 'Notifications',
+    subtitle: 'Recent alerts and administrative updates',
+    icon: Bell,
+    variant: 'notifications',
+    size: 'wide',
+    path: '/secretary/notifications',
+  },
+  {
+    title: 'Hearings',
+    subtitle: 'Manage schedules and court appearances',
+    icon: CalendarDays,
+    variant: 'hearings',
+    size: 'wide',
+    path: '/secretary/hearings',
+  },
+  {
+    title: 'Tasks',
+    subtitle: 'Daily assignments and pending actions',
+    icon: CheckSquare,
+    variant: 'tasks',
+    size: 'wide',
+    path: '/secretary/tasks',
+  },
+  {
+    title: 'Workload',
+    subtitle: 'Track team schedules and responsibilities',
+    icon: Activity,
+    variant: 'staff',
+    size: 'wide',
+    path: '/secretary/workload',
+  },
+  {
+    title: 'Documents',
+    subtitle: 'Manage files, forms, and records',
+    icon: FileText,
+    variant: 'documents',
+    size: 'wide',
+    path: '/secretary/documents',
+  },
+  {
+    title: 'Activities',
+    subtitle: 'Recent office and case activity',
+    icon: Activity,
+    variant: 'activities',
+    size: 'wide',
+    path: '/secretary/activities',
+  },
+];
+
+export default function SecretaryDashboard() {
+  const navigate = useNavigate();
+
+  return (
+    <>
+      <DashboardHero
+        badge='Secretary'
+        title='Welcome back 👋'
+        description='Manage client communications, schedules, documents, and daily administrative operations.'
+        statusTitle='Operations Running Smoothly'
+        statusDescription='All assigned tasks and schedules are up to date.'
+      />
+
+      <section className='-mt-2'>
+        <DashboardGrid className='mt-0 gap-0'>
+          {secretaryTiles.map((tile) => {
+            const Icon = tile.icon;
+
+            return (
+              <DashboardTile
+                key={tile.title}
+                size={tile.size}
+                variant={tile.variant}
+                rounded='none'
+                shadow
+                onClick={() => navigate(tile.path)}
+                className='group min-h-[180px] border border-white/10 p-5 hover:-translate-y-0'
+              >
+                <div className='relative z-10 flex h-full flex-col justify-between'>
+                  <div className='flex items-start justify-between'>
+                    <div>
+                      <p className='text-xs uppercase tracking-[0.25em] text-white/80'>
+                        {tile.title}
+                      </p>
+
+                      <h3 className='mt-2 text-xl font-semibold'>
+                        {tile.subtitle}
+                      </h3>
+                    </div>
+
+                    <div className='rounded-2xl bg-white/15 p-3 shadow-inner backdrop-blur-sm transition group-hover:scale-110'>
+                      <Icon size={22} />
+                    </div>
+                  </div>
+
+                  <div className='mt-4 flex items-center justify-between text-sm text-white/80'>
+                    <span>Open workspace</span>
+
+                    <span className='rounded-full bg-white/15 px-3 py-1 text-xs font-semibold'>
+                      Quick access
+                    </span>
+                  </div>
+                </div>
+              </DashboardTile>
+            );
+          })}
+        </DashboardGrid>
+      </section>
+    </>
+  );
+}

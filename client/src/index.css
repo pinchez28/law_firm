@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+  }
+
+  body {
+    font-family: inherit;
+  }
+}
+
+@layer components {
+  .dashboard-grid .rounded-none,
+  .dashboard-grid .rounded-sm,
+  .dashboard-grid .rounded-md,
+  .dashboard-grid .rounded-lg,
+  .dashboard-grid .rounded-xl,
+  .dashboard-grid .rounded-2xl,
+  .dashboard-grid .rounded-3xl,
+  .dashboard-grid .rounded-t-xl,
+  .dashboard-grid .rounded-b-xl,
+  .dashboard-grid .rounded-t-2xl,
+  .dashboard-grid .rounded-b-2xl {
+    border-radius: 0 !important;
+  }
+}
+
+/* Modern Sidebar Scrollbar */
+.sidebar-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.5) transparent;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.7);
+}
