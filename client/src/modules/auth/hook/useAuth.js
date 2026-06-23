@@ -143,19 +143,20 @@ export default function useAuth() {
   // =====================
   // LOGOUT
   // =====================
-  const logout = async () => {
-    try {
+  const logout = () =>
+    execute(async () => {
       const { refreshToken: refresh } = getStoredAuth();
 
       if (refresh) {
         await authService.logout({ refresh });
       }
-    } finally {
+
       clearAuthSession();
 
       window.location.replace('/login');
-    }
-  };
+
+      return { success: true };
+    });
 
   return {
     user,

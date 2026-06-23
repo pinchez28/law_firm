@@ -1,0 +1,1 @@
+from .law_firm import LawFirm

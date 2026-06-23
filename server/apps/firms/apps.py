@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class FirmConfig(AppConfig):
-    name = 'apps.firm'
+    name = 'apps.firms'

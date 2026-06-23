@@ -5,7 +5,7 @@ const authService = {
   // AUTH
   // =====================
   async login(payload) {
-    const { data } = await axiosInstance.post('/auth/login/', payload);
+    const { data } = await axiosInstance.post('auth/login/', payload);
     return data;
   },
 

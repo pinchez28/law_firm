@@ -18,24 +18,18 @@ class ClientService:
 
     @staticmethod
     def create_client(**validated_data):
-        return Client.objects.create(
-            **validated_data
-        )
+        """
+        ⚠️ KEEP THIS ONLY FOR SIMPLE CLIENT CREATION (LEGACY SUPPORT)
+        Onboarding should NOT use this directly anymore.
+        """
+        return Client.objects.create(**validated_data)
 
     @staticmethod
-    def update_client(
-        client,
-        **validated_data,
-    ):
+    def update_client(client, **validated_data):
         for field, value in validated_data.items():
-            setattr(
-                client,
-                field,
-                value,
-            )
+            setattr(client, field, value)
 
         client.save()
-
         return client
 
     @staticmethod

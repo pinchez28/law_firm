@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.clients.models.client import ClientType
+from apps.clients.models import Client
 
 
 class ClientTypesView(APIView):
@@ -14,6 +14,6 @@ class ClientTypesView(APIView):
                     "value": value,
                     "label": label,
                 }
-                for value, label in ClientType.choices
+                for value, label in Client.ClientType.choices
             ]
         )

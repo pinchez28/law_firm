@@ -27,9 +27,7 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const result = await login({ email, password });
-
-      const data = result?.data;
+      const data = await login({ email, password });
 
       if (!data) throw new Error('Invalid login response');
 

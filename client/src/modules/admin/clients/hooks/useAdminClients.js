@@ -10,9 +10,7 @@ const CLIENTS_KEY = ['admin-clients'];
    FETCH CLIENTS
 ========================================================= */
 const fetchClients = async (params = {}) => {
-  const response = await adminClientsService.getClients(params);
-
-  return response.data;
+  return await adminClientsService.getClients(params);
 };
 
 /* =========================================================
@@ -85,15 +83,15 @@ export const useAdminClients = (params = {}) => {
      RETURN API
   ========================================================= */
   return {
-    summary: data?.summary || {
+    summary: data?.analytics || {
       total_clients: 0,
-      portal_clients: 0,
+      active_clients: 0,
+      inactive_clients: 0,
+      portal_enabled_clients: 0,
       assisted_clients: 0,
-      official_clients: 0,
-      clients_with_cases: 0,
     },
 
-    clients: data?.clients || [],
+    clients: data?.results || [],
 
     isLoading,
     isError,

@@ -9,7 +9,7 @@ const adminClientsService = {
   // ======================================================
   async createPortalClient(payload) {
     const { data } = await axiosInstance.post(
-      '/auth/clients/portal/create/',
+      '/clients/portal/create/',
       payload,
     );
 
@@ -18,7 +18,7 @@ const adminClientsService = {
 
   async createAssistedClient(payload) {
     const { data } = await axiosInstance.post(
-      '/auth/clients/assisted/create/',
+      '/clients/assisted/create/',
       payload,
     );
 
@@ -28,7 +28,7 @@ const adminClientsService = {
   // CLIENT LISTING
   // ======================================================
   async getClients(params = {}) {
-    const { data } = await axiosInstance.get('/auth/clients/', {
+    const { data } = await axiosInstance.get('/clients/', {
       params,
     });
 
@@ -36,7 +36,7 @@ const adminClientsService = {
   },
 
   async getClientDetails(clientId) {
-    const { data } = await axiosInstance.get(`/auth/clients/${clientId}/`);
+    const { data } = await axiosInstance.get(`/clients/${clientId}/`);
 
     return data;
   },
@@ -46,7 +46,7 @@ const adminClientsService = {
   // ======================================================
   async toggleClientStatus(clientId) {
     const { data } = await axiosInstance.post(
-      `/auth/clients/${clientId}/toggle-status/`,
+      `/clients/${clientId}/toggle-status/`,
     );
 
     return data;
@@ -56,9 +56,7 @@ const adminClientsService = {
   // CLIENT DELETE
   // ======================================================
   async deleteClient(clientId) {
-    const { data } = await axiosInstance.delete(
-      `/auth/clients/${clientId}/delete/`,
-    );
+    const { data } = await axiosInstance.delete(`/clients/${clientId}/delete/`);
 
     return data;
   },
@@ -67,10 +65,9 @@ const adminClientsService = {
   // CLIENT CASES
   // ======================================================
   async getClientCases(clientId, params = {}) {
-    const { data } = await axiosInstance.get(
-      `/auth/clients/${clientId}/cases/`,
-      { params },
-    );
+    const { data } = await axiosInstance.get(`/clients/${clientId}/cases/`, {
+      params,
+    });
 
     return data;
   },
@@ -80,7 +77,7 @@ const adminClientsService = {
   // ======================================================
   async getClientDocuments(clientId, params = {}) {
     const { data } = await axiosInstance.get(
-      `/auth/clients/${clientId}/documents/`,
+      `/clients/${clientId}/documents/`,
       { params },
     );
 
@@ -92,7 +89,7 @@ const adminClientsService = {
   // ======================================================
   async getClientCommunication(clientId, params = {}) {
     const { data } = await axiosInstance.get(
-      `/auth/clients/${clientId}/communication/`,
+      `/clients/${clientId}/communication/`,
       { params },
     );
 
@@ -103,25 +100,19 @@ const adminClientsService = {
   // CLIENT BILLING
   // ======================================================
   async getClientBilling(clientId) {
-    const { data } = await axiosInstance.get(
-      `/auth/clients/${clientId}/billing/`,
-    );
+    const { data } = await axiosInstance.get(`/clients/${clientId}/billing/`);
 
     return data;
   },
 
   async getClientInvoices(clientId) {
-    const { data } = await axiosInstance.get(
-      `/auth/clients/${clientId}/invoices/`,
-    );
+    const { data } = await axiosInstance.get(`/clients/${clientId}/invoices/`);
 
     return data;
   },
 
   async getClientPayments(clientId) {
-    const { data } = await axiosInstance.get(
-      `/auth/clients/${clientId}/payments/`,
-    );
+    const { data } = await axiosInstance.get(`/clients/${clientId}/payments/`);
 
     return data;
   },
@@ -130,10 +121,9 @@ const adminClientsService = {
   // CLIENT ACTIVITY
   // ======================================================
   async getClientActivity(clientId, params = {}) {
-    const { data } = await axiosInstance.get(
-      `/auth/clients/${clientId}/activity/`,
-      { params },
-    );
+    const { data } = await axiosInstance.get(`/clients/${clientId}/activity/`, {
+      params,
+    });
 
     return data;
   },
@@ -143,7 +133,7 @@ const adminClientsService = {
   // ======================================================
   async updateClient(clientId, payload) {
     const { data } = await axiosInstance.patch(
-      `/auth/clients/${clientId}/`,
+      `/clients/${clientId}/`,
       payload,
     );
 

@@ -1,5 +1,7 @@
 from django.urls import path
 
+from apps.clients.views.client_onboarding_view import ClientOnboardingView
+
 from .views import (
     ClientListCreateView,
     ClientDetailView,
@@ -24,4 +26,6 @@ urlpatterns = [
         ClientDetailView.as_view(),
         name="client-detail",
     ),
+
+    path("onboard/", ClientOnboardingView.as_view()),
 ]

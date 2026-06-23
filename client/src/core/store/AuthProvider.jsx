@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import AuthContext from '@/core/store/AuthContext';
+import authService from '@/modules/auth/service/authService';
 import {
   clearAuthSession,
   getStoredAuth,
@@ -33,12 +34,26 @@ const AuthProvider = ({ children }) => {
     saveAuthSession({ user, access, refresh }, rememberMe);
   };
 
-  const logout = () => {
-    setUser(null);
-    setAccessToken(null);
-    setRefreshToken(null);
+  const logout = async () => {
+    try {
+      const refresh = refreshToken || getStoredAuth().refreshToken;
 
-    clearAuthSession();
+      if (refresh) {
+        await authService.logout({
+          refresh,
+        });
+      }
+    } catch (error) {
+      console.error('Logout API failed:', error);
+    } finally {
+      setUser(null);
+      setAccessToken(null);
+      setRefreshToken(null);
+
+      clearAuthSession();
+
+      window.location.replace('/login');
+    }
   };
 
   // =========================

@@ -1,161 +1,87 @@
 import uuid
-
-from django.conf import settings
-from django.utils import timezone
 from django.db import models
-
-from apps.common.models.timestamped_model import TimestampedModel
-
-
-class ClientType(models.TextChoices):
-    INDIVIDUAL = "INDIVIDUAL", "Individual"
-    COMPANY = "COMPANY", "Company"
-    PARTNERSHIP = "PARTNERSHIP", "Partnership"
-    NGO = "NGO", "NGO"
-    TRUST = "TRUST", "Trust"
-    ESTATE = "ESTATE", "Estate"
-    GOVERNMENT = "GOVERNMENT", "Government"
-    OTHER = "OTHER", "Other"
+from django.utils import timezone
 
 
-class ClientOnboardingType(models.TextChoices):
-    PUBLIC_REGISTRATION = "PUBLIC_REGISTRATION", "Public Registration"
-    FIRM_CREATED = "FIRM_CREATED", "Firm Created"
-    ASSISTED = "ASSISTED", "Assisted Client"
+class Client(models.Model):
 
+    class ClientType(models.TextChoices):
+        INDIVIDUAL = "INDIVIDUAL", "Individual"
+        COMPANY = "COMPANY", "Company"
+        PARTNERSHIP = "PARTNERSHIP", "Partnership"
+        NGO = "NGO", "NGO"
+        TRUST = "TRUST", "Trust"
+        ESTATE = "ESTATE", "Estate"
+        GOVERNMENT = "GOVERNMENT", "Government"
+        OTHER = "OTHER", "Other"
 
-class Client(TimestampedModel):
-    """
-    Core legal client entity.
+    class OnboardingType(models.TextChoices):
+        PUBLIC = "PUBLIC", "Public Registration"
+        PORTAL = "PORTAL", "Portal Created"
+        ASSISTED = "ASSISTED", "Assisted"
 
-    A client may be:
-    - Individual
-    - Company
-    - Estate
-    - Trust
-    - NGO
-    - Partnership
-    - Government Entity
+    class LifecycleStatus(models.TextChoices):
+        PORTAL_PENDING = "PORTAL_PENDING", "Portal Pending"
+        OFFICIAL_CLIENT = "OFFICIAL_CLIENT", "Official Client"
+        ARCHIVED = "ARCHIVED", "Archived"
 
-    A client may or may not have a login account.
-    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
+    firm = models.ForeignKey(
+        "firms.LawFirm",
+        on_delete=models.CASCADE,
+        related_name="clients",
+        null=True,
+        blank=True
+    )
+
+    created_by = models.ForeignKey(
+        "users.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="created_clients"
     )
 
     user = models.OneToOneField(
-        settings.AUTH_USER_MODEL,
+        "users.User",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="client",
+        related_name="client_profile"
     )
 
-    client_number = models.CharField(
+    full_name = models.CharField(max_length=255)
+    client_type = models.CharField(max_length=30, choices=ClientType.choices)
+
+    onboarding_type = models.CharField(max_length=20, choices=OnboardingType.choices)
+
+    email = models.EmailField(null=True, blank=True)
+    phone_number = models.CharField(max_length=30, null=True, blank=True)
+    address = models.TextField(null=True, blank=True)
+
+    national_id = models.CharField(max_length=50, null=True, blank=True)
+    passport_number = models.CharField(max_length=50, null=True, blank=True)
+    kra_pin = models.CharField(max_length=50, null=True, blank=True)
+
+    date_of_birth = models.DateField(null=True, blank=True)
+
+    registration_number = models.CharField(max_length=100, null=True, blank=True)
+    incorporation_date = models.DateField(null=True, blank=True)
+
+    contact_person = models.CharField(max_length=255, null=True, blank=True)
+
+    portal_enabled = models.BooleanField(default=False)
+
+    lifecycle_status = models.CharField(
         max_length=30,
-        unique=True,
-        editable=False,
+        choices=LifecycleStatus.choices,
+        default=LifecycleStatus.PORTAL_PENDING
     )
 
-    client_type = models.CharField(
-        max_length=30,
-        choices=ClientType.choices,
-    )
+    is_active = models.BooleanField(default=True)
 
-    onboarding_type = models.CharField(
-        max_length=30,
-        choices=ClientOnboardingType.choices,
-    )
-
-    portal_enabled = models.BooleanField(
-        default=False,
-    )
-
-    is_active = models.BooleanField(
-        default=True,
-    )
-
-    notes = models.TextField(
-        blank=True,
-    )
-
-    class Meta:
-        db_table = "clients"
-        ordering = ["-created_at"]
-
-    @property
-    def display_name(self):
-        """
-        Human-readable client name.
-        """
-
-        if (
-            self.client_type == ClientType.INDIVIDUAL
-            and hasattr(self, "individual_details")
-        ):
-            return (
-                f"{self.individual_details.first_name} "
-                f"{self.individual_details.last_name}"
-            )
-
-        if (
-            self.client_type == ClientType.COMPANY
-            and hasattr(self, "company_details")
-        ):
-            return self.company_details.company_name
-
-        if (
-            self.client_type == ClientType.ESTATE
-            and hasattr(self, "estate_details")
-        ):
-            return self.estate_details.estate_name
-
-        if (
-            self.client_type == ClientType.TRUST
-            and hasattr(self, "trust_details")
-        ):
-            return self.trust_details.trust_name
-
-        return self.client_number
-
-    def save(self, *args, **kwargs):
-        """
-        Auto-generate client number.
-        """
-
-        if not self.client_number:
-
-            year = timezone.now().year
-
-            last_client = (
-                Client.objects
-                .order_by("-created_at")
-                .first()
-            )
-
-            if (
-                last_client
-                and last_client.client_number
-            ):
-                try:
-                    last_number = int(
-                        last_client.client_number.split("-")[-1]
-                    )
-                except (ValueError, IndexError):
-                    last_number = 0
-            else:
-                last_number = 0
-
-            next_number = last_number + 1
-
-            self.client_number = (
-                f"CLI-{year}-{next_number:06d}"
-            )
-
-        super().save(*args, **kwargs)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.display_name
+        return self.full_name

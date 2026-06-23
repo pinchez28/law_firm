@@ -9,12 +9,16 @@ import {
 /* =========================================================
    BASE INSTANCE
 ========================================================= */
+const cleanBaseURL = import.meta.env.VITE_API_BASE_URL?.trim().replace(
+  /\/$/,
+  '',
+);
+
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: cleanBaseURL,
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: false,
 });
 
 /* =========================================================

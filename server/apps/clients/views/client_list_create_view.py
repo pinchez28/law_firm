@@ -7,7 +7,10 @@ from apps.clients.serializers import (
     ClientCreateSerializer,
 )
 
-from apps.clients.services import ClientService
+from apps.clients.services import (
+    ClientService,
+    ClientAnalyticsService,
+)
 
 
 class ClientListCreateView(APIView):
@@ -21,7 +24,14 @@ class ClientListCreateView(APIView):
             many=True,
         )
 
-        return Response(serializer.data)
+        analytics = (
+            ClientAnalyticsService.get_client_summary()
+        )
+
+        return Response({
+            "analytics": analytics,
+            "results": serializer.data,
+        })
 
     def post(self, request):
 

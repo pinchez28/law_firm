@@ -1,27 +1,37 @@
-import { LogOut } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useContext } from "react";
-import AuthContext from "@/core/store/AuthContext";
-import Button3D from "@/components/ui/Button3D"; // use 3D button
+import { LogOut } from 'lucide-react';
+import { useContext, useState } from 'react';
+
+import AuthContext from '@/core/store/AuthContext';
+import Button3D from '@/components/ui/Button3D';
 
 const LogoutButton = () => {
   const { logout } = useContext(AuthContext);
-  const navigate = useNavigate();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+
+    try {
+      setIsLoggingOut(true);
+      await logout();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   return (
     <Button3D
+      type='button'
       onClick={handleLogout}
-      variant="warning" // yellow bg
-      size="md" // make it spacious
-      className="w-full flex items-center justify-center gap-2"
+      disabled={isLoggingOut}
+      variant='warning'
+      size='md'
+      className='w-full flex items-center justify-center gap-2'
     >
       <LogOut size={18} />
-      Logout
+      {isLoggingOut ? 'Logging out...' : 'Logout'}
     </Button3D>
   );
 };

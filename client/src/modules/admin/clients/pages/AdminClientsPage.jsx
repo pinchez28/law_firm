@@ -36,7 +36,7 @@ export default function AdminClientsPage() {
       title: activating ? 'Activate Client?' : 'Deactivate Client?',
       text: activating
         ? 'This client will regain access to firm services.'
-        : 'This client will be marked inactive but all cases will remain.',
+        : 'This client will be marked inactive.',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: activating ? 'Yes, activate' : 'Yes, deactivate',
@@ -45,7 +45,7 @@ export default function AdminClientsPage() {
     if (!result.isConfirmed) return;
 
     try {
-      await toggleClientStatus(client.client_id);
+      await toggleClientStatus(client.id);
 
       Swal.fire({
         icon: 'success',
@@ -96,24 +96,6 @@ export default function AdminClientsPage() {
         icon: 'error',
       });
     }
-  };
-
-  const renderLifecycleStatus = (value) => {
-    const styles = {
-      PORTAL: 'bg-green-100 text-green-800',
-      ASSISTED: 'bg-yellow-100 text-yellow-800',
-      OFFICIAL: 'bg-purple-100 text-purple-800',
-    };
-
-    return (
-      <span
-        className={`px-2 py-1 rounded-full text-xs font-semibold ${
-          styles[value] || 'bg-gray-100 text-gray-800'
-        }`}
-      >
-        {value}
-      </span>
-    );
   };
 
   const renderClientType = (value) => {
@@ -171,31 +153,31 @@ export default function AdminClientsPage() {
         />
 
         <StatsCard
-          title='Portal Clients'
-          value={summary?.portal_clients ?? 0}
+          title='Active Clients'
+          value={summary?.active_clients ?? 0}
           icon={<UserCheck size={22} />}
           color='green'
         />
 
         <StatsCard
-          title='Assisted Clients'
-          value={summary?.assisted_clients ?? 0}
-          icon={<UserPlus size={22} />}
-          color='yellow'
+          title='Inactive Clients'
+          value={summary?.inactive_clients ?? 0}
+          icon={<Users size={22} />}
+          color='red'
         />
 
         <StatsCard
-          title='Official Clients'
-          value={summary?.official_clients ?? 0}
-          icon={<Users size={22} />}
+          title='Portal Enabled'
+          value={summary?.portal_enabled_clients ?? 0}
+          icon={<UserPlus size={22} />}
           color='purple'
         />
 
         <StatsCard
-          title='Clients With Cases'
-          value={summary?.clients_with_cases ?? 0}
+          title='Assisted Clients'
+          value={summary?.assisted_clients ?? 0}
           icon={<Briefcase size={22} />}
-          color='red'
+          color='yellow'
         />
       </div>
 
@@ -209,23 +191,13 @@ export default function AdminClientsPage() {
 
       <DataTable
         data={clients || []}
-        mobileTitleKey='full_name'
-        mobileSubtitleKey='phone_number'
+        mobileTitleKey='client_number'
+        mobileSubtitleKey='client_type'
         emptyMessage='No clients found.'
         columns={[
           {
-            key: 'full_name',
-            label: 'Name',
-          },
-          {
-            key: 'email',
-            label: 'Email',
-            render: (value) => value || 'No portal account',
-          },
-          {
-            key: 'phone_number',
-            label: 'Phone',
-            render: (value) => value || 'Not provided',
+            key: 'client_number',
+            label: 'Client Number',
           },
           {
             key: 'client_type',
@@ -233,14 +205,23 @@ export default function AdminClientsPage() {
             render: renderClientType,
           },
           {
-            key: 'lifecycle_status',
-            label: 'Lifecycle',
-            render: renderLifecycleStatus,
+            key: 'onboarding_type',
+            label: 'Onboarding',
           },
           {
-            key: 'case_count',
-            label: 'Cases',
-            render: (value) => value ?? 0,
+            key: 'portal_enabled',
+            label: 'Portal Access',
+            render: (value) => (
+              <span
+                className={
+                  value
+                    ? 'text-success font-semibold'
+                    : 'text-error font-semibold'
+                }
+              >
+                {value ? 'Enabled' : 'Disabled'}
+              </span>
+            ),
           },
           {
             key: 'is_active',
@@ -257,35 +238,37 @@ export default function AdminClientsPage() {
               </span>
             ),
           },
+          {
+            key: 'created_at',
+            label: 'Created',
+            render: (value) =>
+              value ? new Date(value).toLocaleDateString() : 'N/A',
+          },
         ]}
         actions={(client) => (
           <div className='flex flex-wrap gap-2'>
             <Button3D
               size='sm'
-              onClick={() => navigate(`/admin/clients/${client.client_id}`)}
+              onClick={() => navigate(`/admin/clients/${client.id}`)}
             >
               View
             </Button3D>
 
-            {client.case_count === 0 && (
-              <Button3D
-                size='sm'
-                variant='danger'
-                onClick={() => handleDelete(client.client_id)}
-              >
-                Delete
-              </Button3D>
-            )}
+            <Button3D
+              size='sm'
+              variant={client.is_active ? 'warning' : 'success'}
+              onClick={() => handleToggleStatus(client)}
+            >
+              {client.is_active ? 'Deactivate' : 'Activate'}
+            </Button3D>
 
-            {client.case_count > 0 && (
-              <Button3D
-                size='sm'
-                variant={client.is_active ? 'warning' : 'success'}
-                onClick={() => handleToggleStatus(client)}
-              >
-                {client.is_active ? 'Deactivate' : 'Activate'}
-              </Button3D>
-            )}
+            <Button3D
+              size='sm'
+              variant='danger'
+              onClick={() => handleDelete(client.id)}
+            >
+              Delete
+            </Button3D>
           </div>
         )}
       />
