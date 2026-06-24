@@ -23,3 +23,12 @@ __all__ = [
     "ClientContact",
     "ClientDocument",
 ]
+
+from .client import Client
+from .individual_client import IndividualClient
+from .client_address import ClientAddress
+from .client_contact import (
+    ClientContact,
+    ContactType,
+    CommunicationChannel,
+)

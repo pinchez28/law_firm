@@ -8,6 +8,8 @@ from .views import (
     ClientTypesView,
 )
 
+from .views.individual_client_create_view import IndividualClientCreateView
+
 urlpatterns = [
     path(
         "types/",
@@ -28,4 +30,49 @@ urlpatterns = [
     ),
 
     path("onboard/", ClientOnboardingView.as_view()),
+
+
+    # CLIENT SUBTYPE ENDPOINTS
+    # Individual clients creation
+    path(
+        "individual/",
+        IndividualClientCreateView.as_view(),
+        name="create-individual-client"
+    ),
+
+    
+    # # Company clients creation
+    # path(
+    #     "compony/",
+    #     ComponyClientCreateView.as_view(),
+    #     name="create-company-client"
+    # ),
+
+    # # NGO clients creation
+    # path(
+    #     "ngo/",
+    #     NgoClientCreateView.as_view(),
+    #     name="create-ngo-client"
+    # ),
+
+    # # Trust clients creation
+    # path(
+    #     "trust/",
+    #     TrustClientCreateView.as_view(),
+    #     name="create-trust-client"
+    # ),
+
+    # # Government clients creation
+    # path(
+    #     "government/",
+    #     GovernmentClientCreateView.as_view(),
+    #     name="create-governement-client"
+    # ),
+
+    # # Partnership clients creation
+    # path(
+    #     "partnership/",
+    #     PartnershipClientCreateView.as_view(),
+    #     name="create-partnership-client"
+    # ),
 ]

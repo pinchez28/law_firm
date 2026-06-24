@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from apps.clients.models import Client
 
 
@@ -10,19 +9,18 @@ class ClientSerializer(serializers.ModelSerializer):
 
         fields = (
             "id",
-            "client_number",
             "client_type",
             "onboarding_type",
             "portal_enabled",
+            "lifecycle_status",
             "is_active",
-            "notes",
             "created_at",
             "updated_at",
         )
 
         read_only_fields = (
             "id",
-            "client_number",
+            "lifecycle_status",
             "created_at",
             "updated_at",
         )

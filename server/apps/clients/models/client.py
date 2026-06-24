@@ -1,6 +1,6 @@
 import uuid
+
 from django.db import models
-from django.utils import timezone
 
 
 class Client(models.Model):
@@ -16,7 +16,6 @@ class Client(models.Model):
         OTHER = "OTHER", "Other"
 
     class OnboardingType(models.TextChoices):
-        PUBLIC = "PUBLIC", "Public Registration"
         PORTAL = "PORTAL", "Portal Created"
         ASSISTED = "ASSISTED", "Assisted"
 
@@ -25,7 +24,11 @@ class Client(models.Model):
         OFFICIAL_CLIENT = "OFFICIAL_CLIENT", "Official Client"
         ARCHIVED = "ARCHIVED", "Archived"
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
 
     firm = models.ForeignKey(
         "firms.LawFirm",
@@ -39,6 +42,7 @@ class Client(models.Model):
         "users.User",
         on_delete=models.SET_NULL,
         null=True,
+        blank=True,
         related_name="created_clients"
     )
 
@@ -50,27 +54,63 @@ class Client(models.Model):
         related_name="client_profile"
     )
 
-    full_name = models.CharField(max_length=255)
-    client_type = models.CharField(max_length=30, choices=ClientType.choices)
+    # Core Client Information
 
-    onboarding_type = models.CharField(max_length=20, choices=OnboardingType.choices)
+    full_name = models.CharField(
+        max_length=255
+    )
 
-    email = models.EmailField(null=True, blank=True)
-    phone_number = models.CharField(max_length=30, null=True, blank=True)
-    address = models.TextField(null=True, blank=True)
+    email = models.EmailField(
+        null=True,
+        blank=True
+    )
 
-    national_id = models.CharField(max_length=50, null=True, blank=True)
-    passport_number = models.CharField(max_length=50, null=True, blank=True)
-    kra_pin = models.CharField(max_length=50, null=True, blank=True)
+    phone_number = models.CharField(
+        max_length=30
+    )
 
-    date_of_birth = models.DateField(null=True, blank=True)
+    # Client Classification
 
-    registration_number = models.CharField(max_length=100, null=True, blank=True)
-    incorporation_date = models.DateField(null=True, blank=True)
+    client_type = models.CharField(
+        max_length=30,
+        choices=ClientType.choices
+    )
 
-    contact_person = models.CharField(max_length=255, null=True, blank=True)
+    onboarding_type = models.CharField(
+        max_length=20,
+        choices=OnboardingType.choices
+    )
 
-    portal_enabled = models.BooleanField(default=False)
+    portal_enabled = models.BooleanField(
+        default=False
+    )
+
+    # Identification Information
+
+    national_id = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True
+    )
+
+    passport_number = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True
+    )
+
+    kra_pin = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True
+    )
+
+    date_of_birth = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    # Client Lifecycle
 
     lifecycle_status = models.CharField(
         max_length=30,
@@ -78,10 +118,20 @@ class Client(models.Model):
         default=LifecycleStatus.PORTAL_PENDING
     )
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(
+        default=True
+    )
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        db_table = "clients"
 
     def __str__(self):
         return self.full_name
