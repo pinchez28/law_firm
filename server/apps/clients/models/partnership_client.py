@@ -9,24 +9,59 @@ class PartnershipClient(models.Model):
         related_name="partnership_profile"
     )
 
-    partnership_name = models.CharField(max_length=255)
+    # --------------------------------
+    # Partnership Identity
+    # --------------------------------
 
-    registration_number = models.CharField(max_length=100, null=True, blank=True)
-    tax_pin = models.CharField(max_length=100, null=True, blank=True)
+    partnership_name = models.CharField(
+        max_length=255
+    )
 
-    formation_date = models.DateField(null=True, blank=True)
+    registration_number = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True
+    )
 
-    business_address = models.TextField(null=True, blank=True)
+    tax_pin = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True
+    )
 
-    partner_count = models.PositiveIntegerField(default=0)
+    formation_date = models.DateField(
+        null=True,
+        blank=True
+    )
 
-    managing_partner_name = models.CharField(max_length=255, null=True, blank=True)
-    managing_partner_contact = models.CharField(max_length=30, null=True, blank=True)
+    # --------------------------------
+    # Partnership Structure
+    # --------------------------------
 
-    agreement_type = models.CharField(max_length=100, null=True, blank=True)
+    partner_count = models.PositiveIntegerField(
+        default=0
+    )
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    agreement_type = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True
+    )
+
+    # --------------------------------
+    # Metadata
+    # --------------------------------
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        db_table = "partnership_clients"
 
     def __str__(self):
         return self.partnership_name

@@ -10,6 +10,7 @@ from .views import (
 
 from .views.individual_client_create_view import IndividualClientCreateView
 from .views.company_client_create_view import CompanyClientCreateView
+from .views.partnership_client_create_view import PartnershipClientCreateView
 
 urlpatterns = [
     path(
@@ -71,9 +72,9 @@ urlpatterns = [
     # ),
 
     # # Partnership clients creation
-    # path(
-    #     "partnership/",
-    #     PartnershipClientCreateView.as_view(),
-    #     name="create-partnership-client"
-    # ),
+    path(
+        "partnership/",
+        PartnershipClientCreateView.as_view(),
+        name="create-partnership-client"
+    ),
 ]
