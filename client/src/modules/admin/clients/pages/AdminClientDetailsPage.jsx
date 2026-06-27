@@ -3,248 +3,279 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
 import adminClientsService from '@/modules/admin/clients/services/adminClientsService';
+
+import Card from '@/components/ui/Card';
 import StatsCard from '@/components/ui/StatsCard';
 import SectionHeading from '@/components/ui/SectionHeading';
-
 import BackLink from '@/components/ui/BackLink';
+
 import { formatDateTime } from '@/core/utils/dateFormatter';
+import { titleCase, enumLabel } from '@/core/utils/textFormatter';
 
-const clientKeys = {
-  detail: (id) => ['admin-client', id],
-};
-
-const AdminClientDetailsPage = () => {
+export default function AdminClientDetailsPage() {
   const { id } = useParams();
 
-  const {
-    data: client,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: clientKeys.detail(id),
-    queryFn: async () => {
-      const response = await adminClientsService.getClientDetails(id);
-      return response.data;
-    },
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['admin-client', id],
+    queryFn: () => adminClientsService.getClientDetails(id),
     enabled: !!id,
   });
 
   if (isLoading) {
-    return <div>Loading client details...</div>;
+    return (
+      <div className='flex justify-center items-center min-h-[400px]'>
+        Loading client...
+      </div>
+    );
   }
 
   if (error) {
-    return <div>Failed to load client details.</div>;
+    return (
+      <div className='flex justify-center items-center min-h-[400px]'>
+        Failed to load client.
+      </div>
+    );
   }
 
-  if (!client) {
-    return <div>Client not found.</div>;
-  }
+  const analytics = data.analytics;
+  const client = data.client;
 
-  const analytics = client.analytics || {};
-  const caseActivity = client.case_activity || {};
-  const assignment = client.assignment || {};
-  const cases = client.cases || [];
-  const safeEmail = (email) => email || 'Has no email';
-  const safeUserId = (id) => id || 'Has no user ID';
+  const hasValue = (value) => {
+    if (value === null || value === undefined) return false;
+
+    if (typeof value === 'string') {
+      return value.trim() !== '';
+    }
+
+    return true;
+  };
+
+  const basicInformation = [
+    {
+      label: 'Full Name',
+      value: titleCase(client.full_name),
+    },
+    {
+      label: 'Email',
+      value: client.email?.toLowerCase(),
+    },
+    {
+      label: 'Phone Number',
+      value: client.phone_number,
+    },
+    {
+      label: 'National ID',
+      value: client.national_id,
+    },
+    {
+      label: 'Passport Number',
+      value: client.passport_number,
+    },
+    {
+      label: 'KRA PIN',
+      value: client.kra_pin?.toUpperCase(),
+    },
+    {
+      label: 'Date of Birth',
+      value: client.date_of_birth,
+    },
+    {
+      label: 'Client Type',
+      value: enumLabel(client.client_type),
+    },
+    {
+      label: 'Access Type',
+      value: enumLabel(client.access_type),
+    },
+    {
+      label: 'Lifecycle Status',
+      value: enumLabel(client.lifecycle_status),
+    },
+    {
+      label: 'Active',
+      value: client.is_active ? 'Yes' : 'No',
+    },
+    {
+      label: 'Created',
+      value: formatDateTime(client.created_at),
+    },
+    {
+      label: 'Updated',
+      value: formatDateTime(client.updated_at),
+    },
+  ].filter((field) => hasValue(field.value));
+
+  const profileFields = client.individual_profile
+    ? [
+        {
+          label: 'Gender',
+          value: enumLabel(client.individual_profile.gender),
+        },
+        {
+          label: 'Occupation',
+          value: titleCase(client.individual_profile.occupation),
+        },
+        {
+          label: 'Marital Status',
+          value: enumLabel(client.individual_profile.marital_status),
+        },
+      ].filter((field) => hasValue(field.value))
+    : [];
 
   return (
-    <div style={{ padding: 24 }}>
-      <div style={{ marginBottom: 16 }}>
-        <BackLink label='Back to Clients' fallbackPath='/admin/clients' />
-      </div>
-      <SectionHeading title='Client Full Details Page' />
-      {/* CLIENT HEADER */}
-      <div
-        style={{
-          marginBottom: 24,
-          padding: 20,
-          border: '1px solid #e5e7eb',
-          borderRadius: 12,
-        }}
-      >
-        <h2 style={{ marginBottom: 8 }}>{client.full_name}</h2>
+    <div className='space-y-6 p-4 md:p-6 animate-fadeIn'>
+      <BackLink label='Back to Clients' fallbackPath='/admin/clients' />
 
-        <p>
-          <strong>Email:</strong> {safeEmail(client.email)}
-        </p>
+      <SectionHeading
+        title={titleCase(client.full_name)}
+        subtitle='Client Details'
+      />
 
-        <p>
-          <strong>Phone:</strong> {client.phone_number}
-        </p>
+      <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+        <StatsCard title='Addresses' value={analytics.addresses} color='blue' />
 
-        <p>
-          <strong>Client Type:</strong> {client.client_type}
-        </p>
-
-        <p>
-          <strong>Status:</strong> {client.lifecycle_status}
-        </p>
-
-        <p>
-          <strong>Portal Enabled:</strong>{' '}
-          {client.portal_enabled ? 'Yes' : 'No'}
-        </p>
-
-        <p>
-          <strong>Portal Client:</strong>{' '}
-          {client.is_portal_client ? 'Yes' : 'No'}
-        </p>
-
-        <p>
-          <strong>Active:</strong> {client.is_active ? 'Yes' : 'No'}
-        </p>
-
-        <p>
-          <strong>Client ID:</strong> {client.client_id}
-        </p>
-
-        <p>
-          <strong>User ID:</strong> {safeUserId(client.user_id)}
-        </p>
-
-        <p>
-          <strong>Created:</strong> {formatDateTime(client.created_at)}
-        </p>
-      </div>
-
-      {/* ANALYTICS */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(5, 1fr)',
-          gap: 12,
-          marginBottom: 24,
-        }}
-      >
-        <StatsCard title='Total Cases' value={analytics.total_cases || 0} />
-
-        <StatsCard title='Pending' value={analytics.pending_cases || 0} />
+        <StatsCard title='Contacts' value={analytics.contacts} color='green' />
 
         <StatsCard
-          title='In Progress'
-          value={analytics.in_progress_cases || 0}
+          title='Documents'
+          value={analytics.documents}
+          color='purple'
         />
 
-        <StatsCard title='Closed' value={analytics.closed_cases || 0} />
-
-        <StatsCard title='Archived' value={analytics.archived_cases || 0} />
+        <StatsCard
+          title='Status'
+          value={enumLabel(analytics.lifecycle_status)}
+          color='yellow'
+        />
       </div>
 
-      {/* CASE ACTIVITY */}
-      <section
-        style={{
-          marginBottom: 24,
-          padding: 20,
-          border: '1px solid #e5e7eb',
-          borderRadius: 12,
-        }}
-      >
-        <h3>Case Activity</h3>
+      <Card className='p-6'>
+        <h3 className='text-lg font-semibold mb-4'>Basic Information</h3>
 
-        <p>
-          <strong>New Cases (30 Days):</strong>{' '}
-          {caseActivity.new_cases_last_30_days || 0}
-        </p>
-
-        <p>
-          <strong>Stale Cases:</strong> {caseActivity.stale_cases || 0}
-        </p>
-
-        <p>
-          <strong>Last Case Created:</strong>{' '}
-          {caseActivity.last_case_created_at
-            ? formatDateTime(caseActivity.last_case_created_at)
-            : 'N/A'}
-        </p>
-      </section>
-
-      {/* ASSIGNMENT */}
-      <section
-        style={{
-          marginBottom: 24,
-          padding: 20,
-          border: '1px solid #e5e7eb',
-          borderRadius: 12,
-        }}
-      >
-        <h3>Assignment</h3>
-
-        <p>
-          <strong>Assigned Cases:</strong> {assignment.assigned_cases || 0}
-        </p>
-
-        <p>
-          <strong>Unassigned Cases:</strong> {assignment.unassigned_cases || 0}
-        </p>
-
-        <p>
-          <strong>Lawyers Involved:</strong> {assignment.lawyers_involved || 0}
-        </p>
-
-        <p>
-          <strong>Primary Lawyer:</strong>{' '}
-          {assignment.primary_lawyer
-            ?.assigned_lawyer__user__profile__full_name || 'Not Assigned'}
-        </p>
-      </section>
-
-      {/* INSIGHTS */}
-      <section
-        style={{
-          marginBottom: 24,
-          padding: 20,
-          border: '1px solid #e5e7eb',
-          borderRadius: 12,
-        }}
-      >
-        <h3>Insights</h3>
-
-        {client.insights?.length ? (
-          client.insights.map((insight, index) => (
-            <div key={index}>• {insight}</div>
-          ))
-        ) : (
-          <p>No insights available</p>
-        )}
-      </section>
-
-      {/* CASES */}
-      <section
-        style={{
-          padding: 20,
-          border: '1px solid #e5e7eb',
-          borderRadius: 12,
-        }}
-      >
-        <h3>Cases</h3>
-
-        {cases.length === 0 ? (
-          <p>No cases found</p>
-        ) : (
-          cases.map((c, index) => (
-            <div
-              key={c.id || index}
-              style={{
-                padding: 12,
-                marginBottom: 10,
-                border: '1px solid #e5e7eb',
-                borderRadius: 8,
-              }}
-            >
-              <div>
-                <strong>{c.title || c.case_title}</strong>
-              </div>
-
-              <div>Status: {c.status}</div>
-
-              {c.case_number && <div>Case Number: {c.case_number}</div>}
+        <div className='grid md:grid-cols-2 gap-4'>
+          {basicInformation.map((field) => (
+            <div key={field.label}>
+              <strong>{field.label}</strong>
+              <p>{field.value}</p>
             </div>
-          ))
+          ))}
+        </div>
+      </Card>
+
+      {profileFields.length > 0 && (
+        <Card className='p-6'>
+          <h3 className='text-lg font-semibold mb-4'>Individual Profile</h3>
+
+          <div className='grid md:grid-cols-3 gap-4'>
+            {profileFields.map((field) => (
+              <div key={field.label}>
+                <strong>{field.label}</strong>
+                <p>{field.value}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      <Card className='p-6'>
+        <h3 className='text-lg font-semibold mb-4'>Addresses</h3>
+
+        {client.addresses.length === 0 ? (
+          <p>No addresses available.</p>
+        ) : (
+          client.addresses.map((address) => {
+            const addressFields = [
+              {
+                label: 'Type',
+                value: enumLabel(address.address_type),
+              },
+              {
+                label: 'Country',
+                value: titleCase(address.country),
+              },
+              {
+                label: 'County',
+                value: titleCase(address.county),
+              },
+              {
+                label: 'City',
+                value: titleCase(address.city),
+              },
+              {
+                label: 'Street',
+                value: titleCase(address.street),
+              },
+              {
+                label: 'Postal Code',
+                value: address.postal_code,
+              },
+              {
+                label: 'Full Address',
+                value: titleCase(address.full_address),
+              },
+            ].filter((field) => hasValue(field.value));
+
+            return (
+              <div
+                key={address.id}
+                className='border border-border-light dark:border-border-dark rounded-xl p-4 mb-4'
+              >
+                {addressFields.map((field) => (
+                  <p key={field.label}>
+                    <strong>{field.label}:</strong> {field.value}
+                  </p>
+                ))}
+              </div>
+            );
+          })
         )}
-      </section>
+      </Card>
+
+      <Card className='p-6'>
+        <h3 className='text-lg font-semibold mb-4'>Contacts</h3>
+
+        {client.contacts.length === 0 ? (
+          <p>No contacts available.</p>
+        ) : (
+          client.contacts.map((contact) => {
+            const contactFields = [
+              {
+                label: 'Name',
+                value: titleCase(contact.full_name),
+              },
+              {
+                label: 'Phone',
+                value: contact.phone_number,
+              },
+              {
+                label: 'Email',
+                value: contact.email?.toLowerCase(),
+              },
+              {
+                label: 'Contact Type',
+                value: enumLabel(contact.contact_type),
+              },
+              {
+                label: 'Primary',
+                value: contact.is_primary ? 'Yes' : 'No',
+              },
+            ].filter((field) => hasValue(field.value));
+
+            return (
+              <div
+                key={contact.id}
+                className='border border-border-light dark:border-border-dark rounded-xl p-4 mb-4'
+              >
+                {contactFields.map((field) => (
+                  <p key={field.label}>
+                    <strong>{field.label}:</strong> {field.value}
+                  </p>
+                ))}
+              </div>
+            );
+          })
+        )}
+      </Card>
     </div>
   );
-};
-
-export default AdminClientDetailsPage;
+}

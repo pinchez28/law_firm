@@ -24,8 +24,8 @@ class PartnershipClientCreateSerializer(serializers.Serializer):
         allow_blank=True
     )
 
-    onboarding_type = serializers.ChoiceField(
-        choices=Client.OnboardingType.choices
+    access_type = serializers.ChoiceField(
+        choices=Client.AccessType.choices
     )
 
     portal_enabled = serializers.BooleanField(

@@ -9,9 +9,8 @@ class ClientSerializer(serializers.ModelSerializer):
 
         fields = (
             "id",
+            "full_name",
             "client_type",
-            "onboarding_type",
-            "portal_enabled",
             "lifecycle_status",
             "is_active",
             "created_at",

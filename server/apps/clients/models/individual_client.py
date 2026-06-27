@@ -17,73 +17,41 @@ class IndividualClient(models.Model):
     client = models.OneToOneField(
         "clients.Client",
         on_delete=models.CASCADE,
-        related_name="individual_profile"
+        related_name="individual_profile",
     )
 
     gender = models.CharField(
         max_length=20,
         choices=Gender.choices,
         null=True,
-        blank=True
+        blank=True,
     )
 
     occupation = models.CharField(
         max_length=255,
         null=True,
-        blank=True
+        blank=True,
     )
 
     marital_status = models.CharField(
         max_length=20,
         choices=MaritalStatus.choices,
         null=True,
-        blank=True
-    )
-
-    # Next Of Kin
-
-    next_of_kin_name = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True
-    )
-
-    next_of_kin_phone = models.CharField(
-        max_length=30,
-        null=True,
-        blank=True
-    )
-
-    next_of_kin_relationship = models.CharField(
-        max_length=100,
-        null=True,
-        blank=True
-    )
-
-    # Emergency Contact
-
-    emergency_contact_name = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True
-    )
-
-    emergency_contact_phone = models.CharField(
-        max_length=30,
-        null=True,
-        blank=True
+        blank=True,
     )
 
     created_at = models.DateTimeField(
-        auto_now_add=True
+        auto_now_add=True,
     )
 
     updated_at = models.DateTimeField(
-        auto_now=True
+        auto_now=True,
     )
 
     class Meta:
         db_table = "individual_clients"
+        verbose_name = "Individual Client"
+        verbose_name_plural = "Individual Clients"
 
     def __str__(self):
-        return f"Individual: {self.client.full_name}"
+        return self.client.full_name

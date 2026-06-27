@@ -1,3 +1,11 @@
-from .client_list_create_view import ClientListCreateView
 from .client_detail_view import ClientDetailView
-from .client_types_view import ClientTypesView
+from .client_list_view import ClientListView
+from .company_client_create_view import CompanyClientCreateView
+from .individual_client_create_view import IndividualClientCreateView
+
+__all__ = [
+    "ClientListView",
+    "ClientDetailView",
+    "IndividualClientCreateView",
+    "CompanyClientCreateView",
+]

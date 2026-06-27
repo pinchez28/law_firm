@@ -8,34 +8,35 @@ class Client(models.Model):
     class ClientType(models.TextChoices):
         INDIVIDUAL = "INDIVIDUAL", "Individual"
         COMPANY = "COMPANY", "Company"
-        PARTNERSHIP = "PARTNERSHIP", "Partnership"
-        NGO = "NGO", "NGO"
-        TRUST = "TRUST", "Trust"
+        BUSINESS_ENTITY = "BUSINESS_ENTITY", "Business Entity"
+        GOVERNMENT_BODY = "GOVERNMENT_BODY", "Government Body"
+        FINANCIAL_INSTITUTION = "FINANCIAL_INSTITUTION", "Financial Institution"
+        NGO_ASSOCIATION = "NGO_ASSOCIATION", "NGO / Association"
+        EDUCATIONAL_INSTITUTION = "EDUCATIONAL_INSTITUTION", "Educational Institution"
         ESTATE = "ESTATE", "Estate"
-        GOVERNMENT = "GOVERNMENT", "Government"
-        OTHER = "OTHER", "Other"
+        REPRESENTATIVE = "REPRESENTATIVE", "Representative"
+        COOPERATIVE = "COOPERATIVE", "Cooperative"
+        INTERNATIONAL_ENTITY = "INTERNATIONAL_ENTITY", "International Entity"
 
-    class OnboardingType(models.TextChoices):
-        PORTAL = "PORTAL", "Portal Created"
-        ASSISTED = "ASSISTED", "Assisted"
+    class AccessType(models.TextChoices):
+        PORTAL_CLIENT = "PORTAL_CLIENT", "Portal Client"
+        ASSISTED_CLIENT = "ASSISTED_CLIENT", "Assisted Client"
 
     class LifecycleStatus(models.TextChoices):
-        PORTAL_PENDING = "PORTAL_PENDING", "Portal Pending"
+        PROSPECT = "PROSPECT", "Prospect"
         OFFICIAL_CLIENT = "OFFICIAL_CLIENT", "Official Client"
         ARCHIVED = "ARCHIVED", "Archived"
 
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
-        editable=False
+        editable=False,
     )
 
     firm = models.ForeignKey(
         "firms.LawFirm",
         on_delete=models.CASCADE,
         related_name="clients",
-        null=True,
-        blank=True
     )
 
     created_by = models.ForeignKey(
@@ -43,95 +44,102 @@ class Client(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="created_clients"
+        related_name="created_clients",
     )
 
     user = models.OneToOneField(
         "users.User",
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name="client_profile"
+        related_name="client_profile",
     )
 
-    # Core Client Information
+    # Core Identity
 
     full_name = models.CharField(
-        max_length=255
+        max_length=255,
     )
 
     email = models.EmailField(
         null=True,
-        blank=True
+        blank=True,
     )
 
     phone_number = models.CharField(
-        max_length=30
+        max_length=30,
+        blank=True,
+        default="",
     )
 
-    # Client Classification
+    # Classification
 
     client_type = models.CharField(
+        max_length=50,
+        choices=ClientType.choices,
+    )
+
+    access_type = models.CharField(
         max_length=30,
-        choices=ClientType.choices
+        choices=AccessType.choices,
+        default=AccessType.ASSISTED_CLIENT,
     )
 
-    onboarding_type = models.CharField(
-        max_length=20,
-        choices=OnboardingType.choices
-    )
-
-    portal_enabled = models.BooleanField(
-        default=False
-    )
-
-    # Identification Information
+    # Identification
 
     national_id = models.CharField(
         max_length=50,
         null=True,
-        blank=True
+        blank=True,
+        db_index=True,
     )
 
     passport_number = models.CharField(
         max_length=50,
         null=True,
-        blank=True
+        blank=True,
+        db_index=True,
     )
 
     kra_pin = models.CharField(
         max_length=50,
         null=True,
-        blank=True
+        blank=True,
     )
 
     date_of_birth = models.DateField(
         null=True,
-        blank=True
+        blank=True,
     )
 
-    # Client Lifecycle
+    # Lifecycle
 
     lifecycle_status = models.CharField(
         max_length=30,
         choices=LifecycleStatus.choices,
-        default=LifecycleStatus.PORTAL_PENDING
+        default=LifecycleStatus.PROSPECT,
     )
 
     is_active = models.BooleanField(
-        default=True
+        default=True,
     )
 
     created_at = models.DateTimeField(
-        auto_now_add=True
+        auto_now_add=True,
     )
 
     updated_at = models.DateTimeField(
-        auto_now=True
+        auto_now=True,
     )
 
     class Meta:
         db_table = "clients"
+        indexes = [
+            models.Index(fields=["client_type"]),
+            models.Index(fields=["access_type"]),
+            models.Index(fields=["national_id"]),
+            models.Index(fields=["passport_number"]),
+        ]
 
     def __str__(self):
         return self.full_name

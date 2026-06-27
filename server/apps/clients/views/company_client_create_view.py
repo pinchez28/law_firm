@@ -1,41 +1,60 @@
+from django.db import IntegrityError
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.clients.serializers.company_client_create_serializer import CompanyClientCreateSerializer
-
-from apps.clients.services.company_client_service import CompanyClientService
-
 from apps.clients.serializers.client_serializer import ClientSerializer
+from apps.clients.serializers.company_client_create_serializer import (
+    CompanyClientCreateSerializer,
+)
+from apps.clients.services.company_client_service import CompanyClientService
 
 
 class CompanyClientCreateView(APIView):
 
-    permission_classes = [IsAuthenticated]
-
     def post(self, request, *args, **kwargs):
-
-        # ----------------------------------
-        # 1. Validate request
-        # ----------------------------------
         serializer = CompanyClientCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
 
-        # ----------------------------------
-        # 2. Create via service layer
-        # ----------------------------------
-        client = CompanyClientService.create_client(
-            validated_data=serializer.validated_data,
-            user=request.user,
-        )
+        if not serializer.is_valid():
+            return Response(
+                {
+                    "success": False,
+                    "message": "Validation failed.",
+                    "errors": serializer.errors,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        # ----------------------------------
-        # 3. Response serialization
-        # ----------------------------------
-        response_serializer = ClientSerializer(client)
+        try:
+            result = CompanyClientService.create_client(
+                validated_data=serializer.validated_data,
+                user=request.user,
+            )
 
-        return Response(
-            response_serializer.data,
-            status=status.HTTP_201_CREATED,
-        )
+            return Response(
+                {
+                    "success": True,
+                    "message": "Company client created successfully.",
+                    "client": ClientSerializer(result["client"]).data,
+                    "temp_password": result["temp_password"],
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
+        except IntegrityError as e:
+            return Response(
+                {
+                    "success": False,
+                    "message": str(e),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        except Exception as e:
+            return Response(
+                {
+                    "success": False,
+                    "message": str(e),
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

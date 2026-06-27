@@ -1,37 +1,50 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import adminClientsService from '@/modules/admin/clients/services/adminClientsService';
 
 /* =========================================================
    QUERY KEYS
 ========================================================= */
-const CLIENTS_KEY = ['admin-clients'];
 
-/* =========================================================
-   FETCH CLIENTS
-========================================================= */
-const fetchClients = async (params = {}) => {
-  return await adminClientsService.getClients(params);
-};
+const CLIENTS_KEY = ['admin-clients'];
 
 /* =========================================================
    HOOK
 ========================================================= */
+
 export const useAdminClients = (params = {}) => {
   const queryClient = useQueryClient();
 
   /* =========================================================
-     GET CLIENTS
+     CLIENT LIST
   ========================================================= */
-  const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
+
+  const { data, isLoading, isFetching, isError, error, refetch } = useQuery({
     queryKey: [...CLIENTS_KEY, params],
-    queryFn: () => fetchClients(params),
+    queryFn: () => adminClientsService.getClients(params),
   });
 
   /* =========================================================
-     CREATE PORTAL CLIENT
+     CREATE CLIENT
   ========================================================= */
-  const createPortalClient = useMutation({
-    mutationFn: (payload) => adminClientsService.createPortalClient(payload),
+
+  const createClientMutation = useMutation({
+    mutationFn: ({ payload, clientType }) => {
+      if (clientType === 'COMPANY') {
+        return adminClientsService.createCompanyClient(payload);
+      }
+
+      return adminClientsService.createIndividualClient(payload);
+    },
+  });
+
+  /* =========================================================
+     UPDATE CLIENT
+  ========================================================= */
+
+  const updateClientMutation = useMutation({
+    mutationFn: ({ clientId, payload }) =>
+      adminClientsService.updateClient(clientId, payload),
 
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -41,22 +54,10 @@ export const useAdminClients = (params = {}) => {
   });
 
   /* =========================================================
-     CREATE ASSISTED CLIENT
+     DELETE CLIENT
   ========================================================= */
-  const createAssistedClient = useMutation({
-    mutationFn: (payload) => adminClientsService.createAssistedClient(payload),
 
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: CLIENTS_KEY,
-      });
-    },
-  });
-
-  /* =========================================================
-     DELETE PORTAL CLIENT
-  ========================================================= */
-  const deleteClient = useMutation({
+  const deleteClientMutation = useMutation({
     mutationFn: (clientId) => adminClientsService.deleteClient(clientId),
 
     onSuccess: () => {
@@ -66,54 +67,49 @@ export const useAdminClients = (params = {}) => {
     },
   });
 
-  /* =========================================================
-     TOGGLE OFFICIAL CLIENT STATUS
-  ========================================================= */
-  const toggleClientStatus = useMutation({
-    mutationFn: (clientId) => adminClientsService.toggleClientStatus(clientId),
-
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: CLIENTS_KEY,
-      });
-    },
-  });
-
-  /* =========================================================
-     RETURN API
-  ========================================================= */
   return {
-    summary: data?.analytics || {
+    /* Dashboard Analytics */
+    analytics: data?.analytics ?? {
       total_clients: 0,
       active_clients: 0,
       inactive_clients: 0,
-      portal_enabled_clients: 0,
+      portal_clients: 0,
       assisted_clients: 0,
+      prospects: 0,
+      official_clients: 0,
+      archived_clients: 0,
+      clients_by_type: {},
+      recent_clients: 0,
+      growth_metrics: {
+        new_today: 0,
+        new_this_week: 0,
+        new_this_month: 0,
+      },
     },
 
-    clients: data?.results || [],
+    /* Client List */
+    clients: data?.clients ?? [],
 
+    /* Query State */
     isLoading,
+    isFetching,
     isError,
     error,
-    isFetching,
     refetch,
 
-    /* Portal Client Creation */
-    createPortalClient: createPortalClient.mutateAsync,
-    isCreatingPortalClient: createPortalClient.isPending,
+    /* Create (unified) */
+    createClient: (payload, clientType) =>
+      createClientMutation.mutateAsync({ payload, clientType }),
 
-    /* Assisted Client Creation */
-    createAssistedClient: createAssistedClient.mutateAsync,
-    isCreatingAssistedClient: createAssistedClient.isPending,
+    isCreatingClient: createClientMutation.isPending,
 
-    /* Permanent Delete */
-    deleteClient: deleteClient.mutateAsync,
-    isDeleting: deleteClient.isPending,
+    /* Update */
+    updateClient: updateClientMutation.mutateAsync,
+    isUpdatingClient: updateClientMutation.isPending,
 
-    /* Activate / Deactivate Official Client */
-    toggleClientStatus: toggleClientStatus.mutateAsync,
-    isTogglingClient: toggleClientStatus.isPending,
+    /* Delete */
+    deleteClient: deleteClientMutation.mutateAsync,
+    isDeletingClient: deleteClientMutation.isPending,
   };
 };
 

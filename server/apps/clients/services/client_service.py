@@ -6,14 +6,19 @@ from apps.clients.models import Client
 class ClientService:
 
     @staticmethod
-    def get_all_clients():
-        return Client.objects.all()
+    def get_all_clients(user):
+        return (
+            Client.objects
+            .filter(firm=user.firm)
+            .order_by("-created_at")
+        )
 
     @staticmethod
-    def get_client_by_id(client_id):
+    def get_client_by_id(client_id, user):
         return get_object_or_404(
             Client,
             id=client_id,
+            firm=user.firm,
         )
 
     @staticmethod

@@ -18,20 +18,13 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
     - Staff Members
     - Portal Clients
     - Official Clients
-
-    Specific staff responsibilities such as
-    Lawyer and Secretary are modeled in their
-    respective business-domain apps.
-
-    Assisted/offline clients without login credentials
-    should exist only in the clients app.
     """
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
         editable=False,
     )
-
 
     email = models.EmailField(
         unique=True,
@@ -61,6 +54,8 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
         default=UserRole.PORTAL_CLIENT,
     )
 
+    must_change_password = models.BooleanField(default=True)
+
     is_active = models.BooleanField(
         default=True,
     )
@@ -83,6 +78,10 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}".strip()
+
+    @property
+    def firm(self):
+        return self.owned_firm
 
     def __str__(self):
         return f"{self.full_name} ({self.email})"

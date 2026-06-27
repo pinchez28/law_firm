@@ -1,4 +1,9 @@
+from datetime import datetime
+
 from django.db import transaction
+
+from apps.users.models import User
+from apps.users.choices import UserRole
 
 from apps.clients.models import (
     Client,
@@ -19,30 +24,97 @@ class IndividualClientService:
         user,
     ):
         """
-        Creates:
-        1. Client
-        2. IndividualClient
-        3. Primary Address
+        Creates
+
+        1. Portal User (if email exists)
+        2. Client
+        3. Individual Profile
         4. Primary Contact
+        5. Primary Address
         """
 
+        firm = user.firm
+
+        if not firm:
+            raise ValueError(
+                "No law firm configured."
+            )
+
+        email = validated_data.get("email")
+
+        portal_user = None
+
+        if email:
+
+            full_name = validated_data["full_name"].strip()
+
+            name_parts = full_name.split()
+
+            first_name = (
+                name_parts[0]
+                if len(name_parts) > 0
+                else full_name
+            )
+
+            last_name = (
+                " ".join(name_parts[1:])
+                if len(name_parts) > 1
+                else "-"
+            )
+
+            password = (
+                f"{first_name.upper()}{datetime.now().year}"
+            )
+
+            portal_user = User.objects.create_user(
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+                national_id_number=validated_data.get("national_id")
+                    or validated_data.get("passport_number"),
+                phone_number=validated_data.get("phone_number", ""),
+                role=UserRole.PORTAL_CLIENT,
+                must_change_password=True,
+            )
+
+         
+
+            access_type = Client.AccessType.PORTAL_CLIENT
+
+        else:
+
+            access_type = Client.AccessType.ASSISTED_CLIENT
+
         # ----------------------------------
-        # Core Client
+        # Client
         # ----------------------------------
 
         client = Client.objects.create(
-            firm=getattr(user, "firm", None),
+            firm=firm,
             created_by=user,
+            user=portal_user,
             full_name=validated_data["full_name"],
-            email=validated_data.get("email"),
-            phone_number=validated_data["phone_number"],
+            email=email,
+            phone_number=validated_data.get(
+                "phone_number",
+                "",
+            ),
             client_type=Client.ClientType.INDIVIDUAL,
-            onboarding_type=validated_data["onboarding_type"],
-            portal_enabled=validated_data["portal_enabled"],
-            national_id=validated_data.get("national_id"),
-            passport_number=validated_data.get("passport_number"),
-            kra_pin=validated_data.get("kra_pin"),
-            date_of_birth=validated_data.get("date_of_birth"),
+            access_type=access_type,
+            national_id=validated_data.get(
+                "national_id"
+            ),
+            passport_number=validated_data.get(
+                "passport_number"
+            ),
+            kra_pin=validated_data.get(
+                "kra_pin"
+            ),
+            date_of_birth=validated_data.get(
+                "date_of_birth"
+            ),
+            lifecycle_status=Client.LifecycleStatus.PROSPECT,
         )
 
         # ----------------------------------
@@ -52,22 +124,11 @@ class IndividualClientService:
         IndividualClient.objects.create(
             client=client,
             gender=validated_data.get("gender"),
-            occupation=validated_data.get("occupation"),
-            marital_status=validated_data.get("marital_status"),
-            next_of_kin_name=validated_data.get(
-                "next_of_kin_name"
+            occupation=validated_data.get(
+                "occupation"
             ),
-            next_of_kin_phone=validated_data.get(
-                "next_of_kin_phone"
-            ),
-            next_of_kin_relationship=validated_data.get(
-                "next_of_kin_relationship"
-            ),
-            emergency_contact_name=validated_data.get(
-                "emergency_contact_name"
-            ),
-            emergency_contact_phone=validated_data.get(
-                "emergency_contact_phone"
+            marital_status=validated_data.get(
+                "marital_status"
             ),
         )
 
@@ -75,29 +136,49 @@ class IndividualClientService:
         # Primary Contact
         # ----------------------------------
 
-        ClientContact.objects.create(
-            client=client,
-            contact_type=ContactType.PRIMARY,
-            full_name=client.full_name,
-            email=client.email or "",
-            phone_number=client.phone_number,
-            is_primary=True,
-        )
+        if client.phone_number or client.email:
+
+            ClientContact.objects.create(
+                client=client,
+                contact_type=ContactType.PRIMARY,
+                full_name=client.full_name,
+                email=client.email or "",
+                phone_number=client.phone_number or "",
+                is_primary=True,
+            )
 
         # ----------------------------------
         # Primary Address
         # ----------------------------------
 
-        ClientAddress.objects.create(
-            client=client,
-            address_type=ClientAddress.AddressType.HOME,
-            country=validated_data["country"],
-            county=validated_data.get("county"),
-            city=validated_data.get("city"),
-            street=validated_data.get("street"),
-            postal_code=validated_data.get("postal_code"),
-            full_address=validated_data["full_address"],
-            is_primary=True,
-        )
+        if validated_data.get("full_address"):
 
-        return client
+            ClientAddress.objects.create(
+                client=client,
+                address_type=ClientAddress.AddressType.HOME,
+                country=validated_data.get(
+                    "country",
+                    "",
+                ),
+                county=validated_data.get(
+                    "county",
+                ),
+                city=validated_data.get(
+                    "city",
+                ),
+                street=validated_data.get(
+                    "street",
+                ),
+                postal_code=validated_data.get(
+                    "postal_code",
+                ),
+                full_address=validated_data[
+                    "full_address"
+                ],
+                is_primary=True,
+            )
+
+        return {
+            "client": client,
+            "temp_password": password if email else None,
+        }

@@ -1,78 +1,140 @@
-from django.db.models import Count
-from django.utils import timezone
 from datetime import timedelta
 
-from apps.clients.models import Client
+from django.db.models import Count
+from django.utils import timezone
 
+from apps.clients.models import Client
 
 
 class ClientAnalyticsService:
 
     @staticmethod
-    def get_client_summary():
-        total_clients = Client.objects.count()
+    def get_dashboard_summary(user):
 
-        active_clients = Client.objects.filter(
-            is_active=True
-        ).count()
+        queryset = Client.objects.filter(
+            firm=user.firm
+        )
 
-        inactive_clients = Client.objects.filter(
-            is_active=False
-        ).count()
+        now = timezone.now()
 
-        portal_enabled_clients = Client.objects.filter(
-            portal_enabled=True
-        ).count()
-
-        assisted_clients = Client.objects.filter(
-            onboarding_type="ASSISTED"
-        ).count()
-
-        public_registration_clients = Client.objects.filter(
-            onboarding_type="PUBLIC_REGISTRATION"
-        ).count()
-
-        firm_created_clients = Client.objects.filter(
-            onboarding_type="FIRM_CREATED"
-        ).count()
-
-        clients_by_type = (
-            Client.objects
+        client_types = (
+            queryset
             .values("client_type")
             .annotate(total=Count("id"))
         )
 
-        recent_clients = Client.objects.filter(
-            created_at__gte=timezone.now() - timedelta(days=30)
-        ).count()
-
-
-        recent_clients = Client.objects.filter(
-            created_at__gte=timezone.now() - timedelta(days=30)
-        ).count()
-
-        current_month = timezone.now().month
-        current_year = timezone.now().year
-
-        new_clients_this_month = Client.objects.filter(
-            created_at__month=current_month,
-            created_at__year=current_year
-        ).count()
-
         return {
-            "total_clients": total_clients,
-            "active_clients": active_clients,
-            "inactive_clients": inactive_clients,
-            "portal_enabled_clients": portal_enabled_clients,
-            "assisted_clients": assisted_clients,
-            "public_registration_clients": public_registration_clients,
-            "firm_created_clients": firm_created_clients,
+
+            # ----------------------------
+            # Overall
+            # ----------------------------
+
+            "total_clients": queryset.count(),
+
+            "active_clients": queryset.filter(
+                is_active=True
+            ).count(),
+
+            "inactive_clients": queryset.filter(
+                is_active=False
+            ).count(),
+
+            # ----------------------------
+            # Portal Access
+            # ----------------------------
+
+            "portal_clients": queryset.filter(
+                access_type=Client.AccessType.PORTAL_CLIENT
+            ).count(),
+
+            "assisted_clients": queryset.filter(
+                access_type=Client.AccessType.ASSISTED_CLIENT
+            ).count(),
+
+            # ----------------------------
+            # Lifecycle
+            # ----------------------------
+
+            "prospects": queryset.filter(
+                lifecycle_status=Client.LifecycleStatus.PROSPECT
+            ).count(),
+
+            "official_clients": queryset.filter(
+                lifecycle_status=Client.LifecycleStatus.OFFICIAL_CLIENT
+            ).count(),
+
+            "archived_clients": queryset.filter(
+                lifecycle_status=Client.LifecycleStatus.ARCHIVED
+            ).count(),
+
+            # ----------------------------
+            # Distribution
+            # ----------------------------
+
             "clients_by_type": {
                 item["client_type"]: item["total"]
-                for item in clients_by_type
+                for item in client_types
             },
-            "recent_clients": recent_clients,
+
+            # ----------------------------
+            # Growth
+            # ----------------------------
+
+            "recent_clients": queryset.filter(
+                created_at__gte=now - timedelta(days=30)
+            ).count(),
+
             "growth_metrics": {
-                "new_clients_this_month": new_clients_this_month,
-            }
+
+                "new_today": queryset.filter(
+                    created_at__date=now.date()
+                ).count(),
+
+                "new_this_week": queryset.filter(
+                    created_at__gte=now - timedelta(days=7)
+                ).count(),
+
+                "new_this_month": queryset.filter(
+                    created_at__month=now.month,
+                    created_at__year=now.year,
+                ).count(),
+            },
+        }
+
+    @staticmethod
+    def get_client_summary(client):
+
+        return {
+
+            # ----------------------------
+            # Profile
+            # ----------------------------
+
+            "client_type": client.client_type,
+
+            "access_type": client.access_type,
+
+            "lifecycle_status": client.lifecycle_status,
+
+            "is_active": client.is_active,
+
+            # ----------------------------
+            # Records
+            # ----------------------------
+
+            "addresses": client.addresses.count(),
+
+            "contacts": client.contacts.count(),
+
+            "documents": client.documents.count(),
+
+            # ----------------------------
+            # Activity
+            # ----------------------------
+
+            "created_at": client.created_at,
+
+            "updated_at": client.updated_at,
+
+            "last_activity": client.updated_at,
         }

@@ -5,26 +5,12 @@ from apps.clients.models import Client, IndividualClient
 
 class IndividualClientCreateSerializer(serializers.Serializer):
 
-    # ----------------------------------
+    # ==================================
     # Client
-    # ----------------------------------
+    # ==================================
 
-    full_name = serializers.CharField(max_length=255)
-
-    email = serializers.EmailField(
-        required=False,
-        allow_blank=True,
-        allow_null=True,
-    )
-
-    phone_number = serializers.CharField(max_length=30)
-
-    onboarding_type = serializers.ChoiceField(
-        choices=Client.OnboardingType.choices
-    )
-
-    portal_enabled = serializers.BooleanField(
-        default=False
+    full_name = serializers.CharField(
+        max_length=255
     )
 
     national_id = serializers.CharField(
@@ -33,6 +19,17 @@ class IndividualClientCreateSerializer(serializers.Serializer):
     )
 
     passport_number = serializers.CharField(
+        required=False,
+        allow_blank=True,
+    )
+
+    email = serializers.EmailField(
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+    )
+
+    phone_number = serializers.CharField(
         required=False,
         allow_blank=True,
     )
@@ -47,13 +44,13 @@ class IndividualClientCreateSerializer(serializers.Serializer):
         allow_null=True,
     )
 
-    # ----------------------------------
+    # ==================================
     # Individual Profile
-    # ----------------------------------
+    # ==================================
 
     gender = serializers.ChoiceField(
         choices=IndividualClient.Gender.choices,
-        required=True,
+        required=False,
     )
 
     occupation = serializers.CharField(
@@ -66,36 +63,14 @@ class IndividualClientCreateSerializer(serializers.Serializer):
         required=False,
     )
 
-    next_of_kin_name = serializers.CharField(
+    # ==================================
+    # Address (Optional)
+    # ==================================
+
+    country = serializers.CharField(
         required=False,
         allow_blank=True,
     )
-
-    next_of_kin_phone = serializers.CharField(
-        required=False,
-        allow_blank=True,
-    )
-
-    next_of_kin_relationship = serializers.CharField(
-        required=False,
-        allow_blank=True,
-    )
-
-    emergency_contact_name = serializers.CharField(
-        required=False,
-        allow_blank=True,
-    )
-
-    emergency_contact_phone = serializers.CharField(
-        required=False,
-        allow_blank=True,
-    )
-
-    # ----------------------------------
-    # Address
-    # ----------------------------------
-
-    country = serializers.CharField(max_length=100)
 
     county = serializers.CharField(
         required=False,
@@ -117,7 +92,10 @@ class IndividualClientCreateSerializer(serializers.Serializer):
         allow_blank=True,
     )
 
-    full_address = serializers.CharField()
+    full_address = serializers.CharField(
+        required=False,
+        allow_blank=True,
+    )
 
     def validate(self, attrs):
 
@@ -126,7 +104,28 @@ class IndividualClientCreateSerializer(serializers.Serializer):
 
         if not national_id and not passport_number:
             raise serializers.ValidationError(
-                "Either national_id or passport_number is required."
+                {
+                    "non_field_errors": [
+                        "Either national_id or passport_number is required."
+                    ]
+                }
             )
+
+        access_type = attrs.get("access_type")
+
+        if (
+            access_type ==
+            Client.AccessType.PORTAL_CLIENT
+        ):
+            email = attrs.get("email")
+
+            if not email:
+                raise serializers.ValidationError(
+                    {
+                        "email": [
+                            "Portal clients require an email address."
+                        ]
+                    }
+                )
 
         return attrs

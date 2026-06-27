@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import Swal from 'sweetalert2';
 
-import { Users, UserCheck, UserPlus, Briefcase } from 'lucide-react';
+import {
+  Users,
+  UserCheck,
+  UserPlus,
+  Briefcase,
+  ChevronDown,
+  ChevronRight,
+} from 'lucide-react';
 
 import { useAdminClients } from '@/modules/admin/clients/hooks/useAdminClients';
 
@@ -16,65 +22,19 @@ import SectionHeading from '@/components/ui/SectionHeading';
 
 export default function AdminClientsPage() {
   const navigate = useNavigate();
-
   const [search, setSearch] = useState('');
 
-  const {
-    clients,
-    summary,
-    isLoading,
-    isFetching,
-    refetch,
-    deleteClient,
-    toggleClientStatus,
-  } = useAdminClients({ search });
-
-  const handleToggleStatus = async (client) => {
-    const activating = !client.is_active;
-
-    const result = await Swal.fire({
-      title: activating ? 'Activate Client?' : 'Deactivate Client?',
-      text: activating
-        ? 'This client will regain access to firm services.'
-        : 'This client will be marked inactive.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: activating ? 'Yes, activate' : 'Yes, deactivate',
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      await toggleClientStatus(client.id);
-
-      Swal.fire({
-        icon: 'success',
-        title: 'Success',
-        text: activating
-          ? 'Client activated successfully'
-          : 'Client deactivated successfully',
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text:
-          error?.response?.data?.message || 'Failed to update client status',
-      });
-    }
-  };
+  const { analytics, clients, isLoading, isFetching, refetch, deleteClient } =
+    useAdminClients({ search });
 
   const handleDelete = async (clientId) => {
     const result = await Swal.fire({
       title: 'Delete Client?',
-      text: 'This client will be removed completely.',
+      text: 'This client will be permanently deleted.',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Yes, delete',
-      cancelButtonText: 'Cancel',
       confirmButtonColor: '#d33',
+      confirmButtonText: 'Delete',
     });
 
     if (!result.isConfirmed) return;
@@ -83,44 +43,51 @@ export default function AdminClientsPage() {
       await deleteClient(clientId);
 
       Swal.fire({
-        title: 'Success',
-        text: 'Client deleted successfully',
         icon: 'success',
-        timer: 2000,
+        title: 'Deleted',
+        text: 'Client deleted successfully.',
+        timer: 1800,
         showConfirmButton: false,
       });
     } catch (error) {
       Swal.fire({
-        title: 'Error',
-        text: error?.response?.data?.message || 'Failed to delete client',
         icon: 'error',
+        title: 'Error',
+        text: error?.response?.data?.detail || 'Failed to delete client.',
       });
     }
   };
 
-  const renderClientType = (value) => {
-    if (!value) return 'Not set';
-
-    return value
-      .replace(/_/g, ' ')
+  const renderClientType = (value) =>
+    value
+      ?.replace(/_/g, ' ')
       .toLowerCase()
       .replace(/\b\w/g, (c) => c.toUpperCase());
-  };
+
+  const renderStatus = (value) =>
+    value
+      ?.replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, (c) => c.toUpperCase());
 
   if (isLoading) {
     return (
-      <div className='flex items-center justify-center min-h-[400px]'>
-        <p className='text-text-muted-dark'>Loading clients...</p>
+      <div className='flex items-center justify-center min-h-[400px] text-text-primary-light dark:text-text-primary-dark'>
+        Loading clients...
       </div>
     );
   }
 
+  const goToCreate = (type, mode) => {
+    navigate(`/admin/clients/create?type=${type}&mode=${mode || ''}`);
+  };
+
   return (
     <div className='space-y-6 p-4 md:p-6 animate-fadeIn'>
-      <div className='flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between'>
+      <div className='flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4'>
         <SectionHeading
           title='Client Management'
-          subtitle='Manage All Clients'
+          subtitle='Manage all firm clients'
         />
 
         <div className='flex flex-wrap gap-3'>
@@ -128,54 +95,143 @@ export default function AdminClientsPage() {
             {isFetching ? 'Refreshing...' : 'Refresh'}
           </Button3D>
 
-          <Button3D
-            variant='primary'
-            onClick={() => navigate('/admin/clients/create?type=portal')}
-          >
-            + Portal Client
-          </Button3D>
+          {/* CREATE DROPDOWN */}
+          <div className='relative group'>
+            <Button3D variant='primary' className='flex items-center'>
+              + Create Client
+              <ChevronDown size={16} className='ml-2' />
+            </Button3D>
 
-          <Button3D
-            variant='secondary'
-            onClick={() => navigate('/admin/clients/create?type=assisted')}
-          >
-            + Assisted Client
-          </Button3D>
+            <div
+              className='
+                invisible opacity-0
+                group-hover:visible group-hover:opacity-100
+                transition-all duration-200
+
+                absolute right-0 mt-2
+                w-64
+
+                rounded-xl shadow-2xl border z-50
+
+                bg-surface-light dark:bg-surface-dark
+                border-border-light dark:border-border-dark
+              '
+            >
+              {/* INDIVIDUAL */}
+              <div className='relative group/individual'>
+                <button
+                  type='button'
+                  className='
+                    w-full flex items-center justify-between px-4 py-3 text-left
+                    text-text-primary-light dark:text-text-primary-dark
+                    hover:bg-background-light dark:hover:bg-background-dark
+                  '
+                >
+                  <span>Individual</span>
+                  <ChevronRight size={16} />
+                </button>
+
+                {/* SUB MENU OPENS LEFT */}
+                <div
+                  className='
+                    invisible opacity-0
+                    group-hover/individual:visible group-hover/individual:opacity-100
+                    transition-all duration-200
+
+                    absolute top-0 right-full mr-1
+                    w-56
+
+                    rounded-xl shadow-2xl border z-50
+
+                    bg-surface-light dark:bg-surface-dark
+                    border-border-light dark:border-border-dark
+                  '
+                >
+                  <button
+                    onClick={() => goToCreate('individual', 'portal')}
+                    className='
+                      w-full px-4 py-3 text-left
+                      text-text-primary-light dark:text-text-primary-dark
+                      hover:bg-background-light dark:hover:bg-background-dark
+                    '
+                  >
+                    Portal Enabled
+                  </button>
+
+                  <button
+                    onClick={() => goToCreate('individual', 'assisted')}
+                    className='
+                      w-full px-4 py-3 text-left
+                      text-text-primary-light dark:text-text-primary-dark
+                      hover:bg-background-light dark:hover:bg-background-dark
+                    '
+                  >
+                    Assisted Client
+                  </button>
+                </div>
+              </div>
+
+              {[
+                ['Company', 'company'],
+                ['Partnership', 'partnership'],
+                ['Trust', 'trust'],
+                ['NGO', 'ngo'],
+                ['SACCO', 'sacco'],
+                ['Cooperative', 'cooperative'],
+                ['Association', 'association'],
+                ['Government Institution', 'government'],
+                ['School', 'school'],
+                ['Religious Organization', 'religious'],
+              ].map(([label, type]) => (
+                <button
+                  key={type}
+                  onClick={() => goToCreate(type)}
+                  className='
+                    w-full px-4 py-3 text-left
+                    text-text-primary-light dark:text-text-primary-dark
+                    hover:bg-background-light dark:hover:bg-background-dark
+                  '
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
       <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4'>
         <StatsCard
           title='Total Clients'
-          value={summary?.total_clients ?? 0}
+          value={analytics?.total_clients ?? 0}
           icon={<Users size={22} />}
           color='blue'
         />
 
         <StatsCard
           title='Active Clients'
-          value={summary?.active_clients ?? 0}
+          value={analytics?.active_clients ?? 0}
           icon={<UserCheck size={22} />}
           color='green'
         />
 
         <StatsCard
           title='Inactive Clients'
-          value={summary?.inactive_clients ?? 0}
+          value={analytics?.inactive_clients ?? 0}
           icon={<Users size={22} />}
           color='red'
         />
 
         <StatsCard
-          title='Portal Enabled'
-          value={summary?.portal_enabled_clients ?? 0}
+          title='Portal Clients'
+          value={analytics?.portal_clients ?? 0}
           icon={<UserPlus size={22} />}
           color='purple'
         />
 
         <StatsCard
           title='Assisted Clients'
-          value={summary?.assisted_clients ?? 0}
+          value={analytics?.assisted_clients ?? 0}
           icon={<Briefcase size={22} />}
           color='yellow'
         />
@@ -183,45 +239,28 @@ export default function AdminClientsPage() {
 
       <Card className='p-4'>
         <Input3D
+          placeholder='Search clients...'
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder='Search clients...'
         />
       </Card>
 
       <DataTable
-        data={clients || []}
-        mobileTitleKey='client_number'
-        mobileSubtitleKey='client_type'
+        data={clients}
         emptyMessage='No clients found.'
+        mobileTitleKey='full_name'
+        mobileSubtitleKey='client_type'
         columns={[
-          {
-            key: 'client_number',
-            label: 'Client Number',
-          },
+          { key: 'full_name', label: 'Client Name' },
           {
             key: 'client_type',
-            label: 'Client Type',
+            label: 'Category',
             render: renderClientType,
           },
           {
-            key: 'onboarding_type',
-            label: 'Onboarding',
-          },
-          {
-            key: 'portal_enabled',
-            label: 'Portal Access',
-            render: (value) => (
-              <span
-                className={
-                  value
-                    ? 'text-success font-semibold'
-                    : 'text-error font-semibold'
-                }
-              >
-                {value ? 'Enabled' : 'Disabled'}
-              </span>
-            ),
+            key: 'lifecycle_status',
+            label: 'Lifecycle',
+            render: renderStatus,
           },
           {
             key: 'is_active',
@@ -241,25 +280,16 @@ export default function AdminClientsPage() {
           {
             key: 'created_at',
             label: 'Created',
-            render: (value) =>
-              value ? new Date(value).toLocaleDateString() : 'N/A',
+            render: (value) => new Date(value).toLocaleDateString(),
           },
         ]}
         actions={(client) => (
-          <div className='flex flex-wrap gap-2'>
+          <div className='flex gap-2 flex-wrap'>
             <Button3D
               size='sm'
               onClick={() => navigate(`/admin/clients/${client.id}`)}
             >
               View
-            </Button3D>
-
-            <Button3D
-              size='sm'
-              variant={client.is_active ? 'warning' : 'success'}
-              onClick={() => handleToggleStatus(client)}
-            >
-              {client.is_active ? 'Deactivate' : 'Activate'}
             </Button3D>
 
             <Button3D

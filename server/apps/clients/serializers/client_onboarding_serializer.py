@@ -1,11 +1,12 @@
 from rest_framework import serializers
+
 from apps.clients.models import Client
 
 
 class ClientOnboardingSerializer(serializers.Serializer):
 
-    onboarding_type = serializers.ChoiceField(
-        choices=Client.OnboardingType.choices
+    access_type = serializers.ChoiceField(
+        choices=Client.AccessType.choices
     )
 
     client_type = serializers.ChoiceField(
@@ -18,12 +19,4 @@ class ClientOnboardingSerializer(serializers.Serializer):
     )
 
     def validate(self, attrs):
-        onboarding_type = attrs.get("onboarding_type")
-        client_type = attrs.get("client_type")
-
-        if onboarding_type == "ASSISTED" and not client_type:
-            raise serializers.ValidationError(
-                "Client type is required for assisted onboarding"
-            )
-
         return attrs
