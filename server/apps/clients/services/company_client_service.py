@@ -1,6 +1,3 @@
-import re
-from datetime import datetime
-
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
@@ -9,25 +6,24 @@ from apps.clients.models.client_address import ClientAddress
 from apps.clients.models.client_contact import ClientContact, ContactType
 from apps.clients.models.company_client import CompanyClient
 from apps.users.choices import UserRole
+from apps.firms.models import LawFirmMember
+from apps.clients.utils.passwords import generate_temp_password
 
 User = get_user_model()
 
 
-def generate_temp_password(company_name: str) -> str:
-    """
-    Generates a memorable temporary password.
+def get_user_firm(user):
+    membership = (
+        LawFirmMember.objects
+        .select_related("firm")
+        .filter(user=user, is_active=True)
+        .first()
+    )
 
-    Example:
-    ABC Holdings Ltd -> ABCHO2026
-    Microsoft Kenya -> MICRO2026
-    IBM -> IBMXX2026
-    """
+    if not membership:
+        raise ValueError("User is not assigned to any firm")
 
-    cleaned = re.sub(r"[^A-Za-z0-9]", "", company_name)
-
-    prefix = cleaned[:5].upper().ljust(5, "X")
-
-    return f"{prefix}{datetime.now().year}"
+    return membership.firm
 
 
 class CompanyClientService:
@@ -40,22 +36,17 @@ class CompanyClientService:
 
         temp_password = generate_temp_password(company_name)
 
-        # ----------------------------------------
-        # Split contact name
-        # ----------------------------------------
-
         full_name = validated_data["contact_full_name"].strip()
         name_parts = full_name.split(maxsplit=1)
 
         first_name = name_parts[0]
         last_name = name_parts[1] if len(name_parts) > 1 else ""
 
-        # ----------------------------------------
-        # Base Client
-        # ----------------------------------------
+        # ✅ FIX: resolve firm correctly
+        firm = get_user_firm(user)
 
         client = Client.objects.create(
-            firm=user.firm,
+            firm=firm,
             created_by=user,
             full_name=company_name,
             email=validated_data["email"],
@@ -63,10 +54,6 @@ class CompanyClientService:
             client_type=Client.ClientType.COMPANY,
             access_type=Client.AccessType.PORTAL_CLIENT,
         )
-
-        # ----------------------------------------
-        # Company Profile
-        # ----------------------------------------
 
         company = CompanyClient.objects.create(
             client=client,
@@ -85,29 +72,19 @@ class CompanyClientService:
             director_count=validated_data.get("director_count", 0),
         )
 
-        # ----------------------------------------
-        # Portal User
-        # ----------------------------------------
-
         portal_user = User.objects.create_user(
             email=validated_data["contact_email"],
             password=temp_password,
             first_name=first_name,
             last_name=last_name,
             phone_number=validated_data["contact_phone_number"],
-            national_id_number=validated_data[
-                "contact_national_id_number"
-            ],
+            national_id_number=validated_data["contact_national_id_number"],
             role=UserRole.PORTAL_CLIENT,
             must_change_password=True,
         )
 
         company.user = portal_user
         company.save(update_fields=["user"])
-
-        # ----------------------------------------
-        # Registered Address
-        # ----------------------------------------
 
         ClientAddress.objects.create(
             client=client,
@@ -121,10 +98,6 @@ class CompanyClientService:
             is_primary=True,
         )
 
-        # ----------------------------------------
-        # Primary Contact
-        # ----------------------------------------
-
         ClientContact.objects.create(
             client=client,
             contact_type=ContactType.PRIMARY,
@@ -137,10 +110,6 @@ class CompanyClientService:
             phone_number=validated_data["contact_phone_number"],
             is_primary=True,
         )
-
-        # ----------------------------------------
-        # Response
-        # ----------------------------------------
 
         return {
             "client": client,

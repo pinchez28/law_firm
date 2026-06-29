@@ -1,24 +1,39 @@
 from django.shortcuts import get_object_or_404
 
 from apps.clients.models import Client
+from apps.firms.models import LawFirmMember
 
 
 class ClientService:
 
     @staticmethod
+    def _get_user_firm(user):
+        membership = get_object_or_404(
+            LawFirmMember,
+            user=user,
+            is_active=True,
+        )
+
+        return membership.firm
+
+    @staticmethod
     def get_all_clients(user):
+        firm = ClientService._get_user_firm(user)
+
         return (
             Client.objects
-            .filter(firm=user.firm)
+            .filter(firm=firm)
             .order_by("-created_at")
         )
 
     @staticmethod
     def get_client_by_id(client_id, user):
+        firm = ClientService._get_user_firm(user)
+
         return get_object_or_404(
             Client,
             id=client_id,
-            firm=user.firm,
+            firm=firm,
         )
 
     @staticmethod
@@ -35,6 +50,7 @@ class ClientService:
             setattr(client, field, value)
 
         client.save()
+
         return client
 
     @staticmethod

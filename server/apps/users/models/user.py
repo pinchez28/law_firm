@@ -6,9 +6,7 @@ from django.db import models
 from apps.common.models.timestamped_model import TimestampedModel
 from apps.users.choices import (
     UserRole,
-    FirmRole,
     USER_ROLE_CHOICES,
-    FIRM_ROLE_CHOICES,
 )
 from apps.users.managers import UserManager
 
@@ -25,14 +23,8 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
         - OFFICIAL_CLIENT
         - PORTAL_CLIENT
 
-    Firm Roles:
-        - LAWYER
-        - SECRETARY
-        - IT
-        - ACCOUNTANT
-        - HR
-        - OFFICE_ASSISTANT
-        - OFFICIAL_CLIENT
+    Firm membership and firm roles are managed by
+    the LawFirmMember model.
     """
 
     id = models.UUIDField(
@@ -63,27 +55,11 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
         unique=True,
     )
 
-    # Authentication / Authorization Role
+    # System Role
     role = models.CharField(
         max_length=30,
         choices=USER_ROLE_CHOICES,
         default=UserRole.PORTAL_CLIENT,
-    )
-
-    # Profession within the firm
-    firm_role = models.CharField(
-        max_length=30,
-        choices=FIRM_ROLE_CHOICES,
-        null=True,
-        blank=True,
-    )
-
-    firm = models.ForeignKey(
-        "firms.LawFirm",
-        on_delete=models.CASCADE,
-        related_name="users",
-        null=True,
-        blank=True,
     )
 
     must_change_password = models.BooleanField(
@@ -113,7 +89,9 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
     def full_name(self):
         return f"{self.first_name} {self.last_name}".strip()
 
-    # ---------- System Roles ----------
+    # ==========================
+    # System Roles
+    # ==========================
 
     @property
     def is_admin(self):
@@ -130,32 +108,6 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
     @property
     def is_portal_client(self):
         return self.role == UserRole.PORTAL_CLIENT
-
-    # ---------- Firm Roles ----------
-
-    @property
-    def is_lawyer(self):
-        return self.firm_role == FirmRole.LAWYER
-
-    @property
-    def is_secretary(self):
-        return self.firm_role == FirmRole.SECRETARY
-
-    @property
-    def is_it(self):
-        return self.firm_role == FirmRole.IT
-
-    @property
-    def is_accountant(self):
-        return self.firm_role == FirmRole.ACCOUNTANT
-
-    @property
-    def is_hr(self):
-        return self.firm_role == FirmRole.HR
-
-    @property
-    def is_office_assistant(self):
-        return self.firm_role == FirmRole.OFFICE_ASSISTANT
 
     def __str__(self):
         return f"{self.full_name} ({self.email})"

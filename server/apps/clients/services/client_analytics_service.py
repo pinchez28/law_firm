@@ -4,15 +4,27 @@ from django.db.models import Count
 from django.utils import timezone
 
 from apps.clients.models import Client
+from apps.firms.models import LawFirmMember
 
 
 class ClientAnalyticsService:
 
     @staticmethod
+    def _get_user_firm(user):
+        membership = (
+            LawFirmMember.objects
+            .select_related("firm")
+            .get(user=user, is_active=True)
+        )
+        return membership.firm
+
+    @staticmethod
     def get_dashboard_summary(user):
 
+        firm = ClientAnalyticsService._get_user_firm(user)
+
         queryset = Client.objects.filter(
-            firm=user.firm
+            firm=firm
         )
 
         now = timezone.now()
@@ -111,11 +123,8 @@ class ClientAnalyticsService:
             # ----------------------------
 
             "client_type": client.client_type,
-
             "access_type": client.access_type,
-
             "lifecycle_status": client.lifecycle_status,
-
             "is_active": client.is_active,
 
             # ----------------------------
@@ -123,9 +132,7 @@ class ClientAnalyticsService:
             # ----------------------------
 
             "addresses": client.addresses.count(),
-
             "contacts": client.contacts.count(),
-
             "documents": client.documents.count(),
 
             # ----------------------------
@@ -133,8 +140,6 @@ class ClientAnalyticsService:
             # ----------------------------
 
             "created_at": client.created_at,
-
             "updated_at": client.updated_at,
-
             "last_activity": client.updated_at,
         }

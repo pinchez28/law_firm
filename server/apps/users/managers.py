@@ -11,8 +11,6 @@ class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         """
         Base user creation method.
-
-        Used internally by all other creation methods.
         """
 
         if not email:
@@ -37,12 +35,14 @@ class UserManager(BaseUserManager):
         **extra_fields,
     ):
         """
-        Creates a firm administrator.
+        Creates a law firm administrator.
 
-        Allowed firm roles:
-            - LAWYER
-            - IT
+        A law firm admin must belong to a firm and
+        must be either a LAWYER or IT.
         """
+
+        if not extra_fields.get("firm"):
+            raise ValueError("Admin must belong to a law firm.")
 
         firm_role = extra_fields.get("firm_role")
 
@@ -72,6 +72,9 @@ class UserManager(BaseUserManager):
         """
         Creates a staff member.
         """
+
+        if not extra_fields.get("firm"):
+            raise ValueError("Staff must belong to a law firm.")
 
         allowed_roles = (
             FirmRole.LAWYER,
@@ -106,13 +109,12 @@ class UserManager(BaseUserManager):
         """
         Creates a portal client.
 
-        Portal clients are not yet attached
-        to a law firm.
+        Portal clients are not attached to a law firm.
         """
 
         extra_fields["role"] = UserRole.PORTAL_CLIENT
-        extra_fields["firm_role"] = None
         extra_fields["firm"] = None
+        extra_fields["firm_role"] = None
 
         return self.create_user(
             email,
@@ -128,13 +130,11 @@ class UserManager(BaseUserManager):
     ):
         """
         Creates an official client.
-
-        Official clients belong to a law firm.
         """
 
         if not extra_fields.get("firm"):
             raise ValueError(
-                "Official Client must belong to a law firm."
+                "Official client must belong to a law firm."
             )
 
         extra_fields["role"] = UserRole.OFFICIAL_CLIENT
@@ -156,27 +156,18 @@ class UserManager(BaseUserManager):
         Django superuser.
 
         Used only for Django Admin.
+        It is NOT a law firm member.
         """
 
-        extra_fields.setdefault(
-            "is_staff",
-            True,
-        )
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
 
-        extra_fields.setdefault(
-            "is_superuser",
-            True,
-        )
+        # Platform administrator
+        extra_fields.setdefault("role", UserRole.ADMIN)
 
-        extra_fields.setdefault(
-            "role",
-            UserRole.ADMIN,
-        )
-
-        extra_fields.setdefault(
-            "firm_role",
-            FirmRole.IT,
-        )
+        # Not attached to any firm
+        extra_fields["firm"] = None
+        extra_fields["firm_role"] = None
 
         if extra_fields.get("is_staff") is not True:
             raise ValueError(
