@@ -1,46 +1,46 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny
 
-from apps.authentication.serializers.login_serializer import LoginSerializer
-from apps.users.serializers.user_serializer import UserSerializer
-from apps.authentication.services.auth_service import AuthService
+from ..services.auth_service import AuthService
 
 
 class LoginView(APIView):
-    """
-    Handles user login and returns JWT tokens + serialized user info.
-    """
-
-    permission_classes = [AllowAny]
 
     def post(self, request):
-        # 1. Validate input
-        serializer = LoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        email = request.data.get("email")
+        password = request.data.get("password")
 
-        # 2. Authenticate user via service layer
         result, error = AuthService.login_user(
-            email=serializer.validated_data["email"],
-            password=serializer.validated_data["password"],
+            email=email,
+            password=password,
+            request=request
         )
 
-        # 3. Handle authentication failure
         if error:
             return Response(
                 {"detail": error},
-                status=status.HTTP_401_UNAUTHORIZED,
+                status=status.HTTP_401_UNAUTHORIZED
             )
 
         user = result["user"]
+        firm = result["firm"]
 
-        # 4. Return clean, serialized response
-        return Response(
-            {
-                "access": result["access"],
-                "refresh": result["refresh"],
-                "user": UserSerializer(user).data,
+        return Response({
+            "access": result["access"],
+            "refresh": result["refresh"],
+
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "full_name": f"{user.first_name} {user.last_name}",
+                "role": result["role"],
             },
-            status=status.HTTP_200_OK,
-        )
+
+            "firm": {
+                "id": firm.id if firm else None,
+                "name": firm.name if firm else None,
+            },
+
+            "firm_role": result["firm_role"],
+        }, status=status.HTTP_200_OK)

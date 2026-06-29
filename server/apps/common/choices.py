@@ -1,3 +1,5 @@
+from django.db import models
+
 class UserRole:
     ADMIN = "ADMIN"
     STAFF = "STAFF"
@@ -12,8 +14,16 @@ USER_ROLE_CHOICES = [
     (UserRole.PORTAL_CLIENT, "Portal Client"),
 ]
 
+class StaffRole(models.TextChoices):
+    LAWYER = "LAWYER", "Lawyer"
+    SECRETARY = "SECRETARY", "Secretary"
+    IT = "IT", "IT Support"
+    ACCOUNTANT = "ACCOUNTANT", "Accountant"
+    HR = "HR", "Human Resource"
+    OFFICE_ASSISTANT = "OFFICE_ASSISTANT", "Office Assistant" 
 
-class FirmRole:
+
+class FirmRole(models.TextChoices):
     LAWYER = "LAWYER"
     SECRETARY = "SECRETARY"
     IT = "IT"

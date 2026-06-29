@@ -1,13 +1,23 @@
 from rest_framework import serializers
-from apps.users.models.user import User
+
+from apps.users.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
-    role = serializers.SerializerMethodField()
+
+    full_name = serializers.ReadOnlyField()
 
     class Meta:
         model = User
-        fields = ["id", "email", "role", "full_name"]
-
-    def get_role(self, obj):
-        return obj.role.upper() if obj.role else None
+        fields = (
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "full_name",
+            "phone_number",
+            "national_id_number",
+            "role",
+            "firm_role",
+            "firm",
+        )

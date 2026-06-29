@@ -1,20 +1,11 @@
-# apps/firms/models/firm_member.py
-
 import uuid
 
 from django.db import models
-
 from apps.common.models.timestamped_model import TimestampedModel
+from apps.common.choices import FirmRole
 
 
-class FirmMember(TimestampedModel):
-
-    class Role(models.TextChoices):
-        OWNER = "OWNER", "Owner"
-        LAWYER = "LAWYER", "Lawyer"
-        SECRETARY = "SECRETARY", "Secretary"
-        ACCOUNTANT = "ACCOUNTANT", "Accountant"
-        PARALEGAL = "PARALEGAL", "Paralegal"
+class LawFirmMember(TimestampedModel):
 
     id = models.UUIDField(
         primary_key=True,
@@ -36,15 +27,22 @@ class FirmMember(TimestampedModel):
 
     role = models.CharField(
         max_length=30,
-        choices=Role.choices,
+        choices=FirmRole.choices,
     )
 
-    is_active = models.BooleanField(
-        default=True,
+    is_active = models.BooleanField(default=True)
+
+    created_by = models.ForeignKey(
+        "users.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="created_firm_members",
     )
 
     class Meta:
         db_table = "firm_members"
+        ordering = ["-created_at"]
+        unique_together = ("firm", "user")
 
     def __str__(self):
         return f"{self.user.full_name} - {self.role}"
