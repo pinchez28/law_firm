@@ -3,11 +3,8 @@ import uuid
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 
+from apps.common.choices import UserRole
 from apps.common.models.timestamped_model import TimestampedModel
-from apps.users.choices import (
-    UserRole,
-    USER_ROLE_CHOICES,
-)
 from apps.users.managers import UserManager
 
 
@@ -23,8 +20,8 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
         - OFFICIAL_CLIENT
         - PORTAL_CLIENT
 
-    Firm membership and firm roles are managed by
-    the LawFirmMember model.
+    Employment information is stored in the Staff model.
+    Client information is stored in the Client model.
     """
 
     id = models.UUIDField(
@@ -55,10 +52,9 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
         unique=True,
     )
 
-    # System Role
     role = models.CharField(
         max_length=30,
-        choices=USER_ROLE_CHOICES,
+        choices=UserRole.choices,
         default=UserRole.PORTAL_CLIENT,
     )
 
@@ -88,10 +84,6 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}".strip()
-
-    # ==========================
-    # System Roles
-    # ==========================
 
     @property
     def is_admin(self):

@@ -1,6 +1,6 @@
 from rest_framework.permissions import BasePermission
 
-from apps.users.choices import UserRole
+from apps.common.choices import UserRole
 
 
 class IsAdmin(BasePermission):

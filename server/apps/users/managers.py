@@ -1,6 +1,6 @@
 from django.contrib.auth.base_user import BaseUserManager
 
-from apps.users.choices import (
+from apps.common.choices import (
     UserRole,
     FirmRole,
 )

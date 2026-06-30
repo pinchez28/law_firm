@@ -1,7 +1,7 @@
 from django.db import transaction
 
 from apps.firms.models import LawFirm, LawFirmMember
-from apps.users.choices import UserRole, FirmRole
+from apps.common.choices import UserRole, FirmRole
 
 
 class LawFirmService:

@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from apps.users.models import User
-from apps.users.choices import UserRole
+from apps.common.choices import UserRole
 
 from apps.permissions.services.permission_service import PermissionService
 

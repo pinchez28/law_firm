@@ -2,7 +2,7 @@ from datetime import datetime
 from django.db import transaction
 
 from apps.users.models import User
-from apps.users.choices import UserRole
+from apps.common.choices import UserRole
 
 from apps.clients.models import (
     Client,

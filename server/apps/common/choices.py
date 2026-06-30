@@ -1,44 +1,67 @@
 from django.db import models
 
-class UserRole:
-    ADMIN = "ADMIN"
-    STAFF = "STAFF"
-    OFFICIAL_CLIENT = "OFFICIAL_CLIENT"
-    PORTAL_CLIENT = "PORTAL_CLIENT"
+
+# ==========================================================
+# System Roles
+# ==========================================================
+
+class UserRole(models.TextChoices):
+    ADMIN = "ADMIN", "Admin"
+    STAFF = "STAFF", "Staff"
+    OFFICIAL_CLIENT = "OFFICIAL_CLIENT", "Official Client"
+    PORTAL_CLIENT = "PORTAL_CLIENT", "Portal Client"
 
 
-USER_ROLE_CHOICES = [
-    (UserRole.ADMIN, "Admin"),
-    (UserRole.STAFF, "Staff"),
-    (UserRole.OFFICIAL_CLIENT, "Official Client"),
-    (UserRole.PORTAL_CLIENT, "Portal Client"),
-]
-
-class StaffRole(models.TextChoices):
-    LAWYER = "LAWYER", "Lawyer"
-    SECRETARY = "SECRETARY", "Secretary"
-    IT = "IT", "IT Support"
-    ACCOUNTANT = "ACCOUNTANT", "Accountant"
-    HR = "HR", "Human Resource"
-    OFFICE_ASSISTANT = "OFFICE_ASSISTANT", "Office Assistant" 
-
+# ==========================================================
+# Law Firm Roles
+# ==========================================================
 
 class FirmRole(models.TextChoices):
-    LAWYER = "LAWYER"
-    SECRETARY = "SECRETARY"
-    IT = "IT"
-    ACCOUNTANT = "ACCOUNTANT"
-    HR = "HR"
-    OFFICE_ASSISTANT = "OFFICE_ASSISTANT"
-    OFFICIAL_CLIENT = "OFFICIAL_CLIENT"
+    MANAGING_PARTNER = "MANAGING_PARTNER", "Managing Partner"
+    SENIOR_PARTNER = "SENIOR_PARTNER", "Senior Partner"
+    PARTNER = "PARTNER", "Partner"
+
+    ASSOCIATE = "ASSOCIATE", "Associate"
+    SENIOR_ASSOCIATE = "SENIOR_ASSOCIATE", "Senior Associate"
+
+    PUPIL = "PUPIL", "Pupil"
+    LEGAL_INTERN = "LEGAL_INTERN", "Legal Intern"
+
+    SECRETARY = "SECRETARY", "Secretary"
+    PARALEGAL = "PARALEGAL", "Paralegal"
+    LEGAL_CLERK = "LEGAL_CLERK", "Legal Clerk"
+
+    ACCOUNTANT = "ACCOUNTANT", "Accountant"
+    HR = "HR", "Human Resource"
+    IT = "IT", "IT Support"
+    OFFICE_ADMINISTRATOR = "OFFICE_ADMINISTRATOR", "Office Administrator"
+    OFFICE_ASSISTANT = "OFFICE_ASSISTANT", "Office Assistant"
+    RECEPTIONIST = "RECEPTIONIST", "Receptionist"
+    MESSENGER = "MESSENGER", "Messenger"
 
 
-FIRM_ROLE_CHOICES = [
-    (FirmRole.LAWYER, "Lawyer"),
-    (FirmRole.SECRETARY, "Secretary"),
-    (FirmRole.IT, "IT"),
-    (FirmRole.ACCOUNTANT, "Accountant"),
-    (FirmRole.HR, "Human Resource"),
-    (FirmRole.OFFICE_ASSISTANT, "Office Assistant"),
-    (FirmRole.OFFICIAL_CLIENT, "Official Client"),
-]
+# ==========================================================
+# Employment Types
+# ==========================================================
+
+class EmploymentType(models.TextChoices):
+    PERMANENT = "PERMANENT", "Permanent"
+    CONTRACT = "CONTRACT", "Contract"
+    PART_TIME = "PART_TIME", "Part Time"
+    INTERN = "INTERN", "Intern"
+    CONSULTANT = "CONSULTANT", "Consultant"
+    TEMPORARY = "TEMPORARY", "Temporary"
+
+
+# ==========================================================
+# Employment Status
+# ==========================================================
+
+class EmploymentStatus(models.TextChoices):
+    ACTIVE = "ACTIVE", "Active"
+    PROBATION = "PROBATION", "Probation"
+    ON_LEAVE = "ON_LEAVE", "On Leave"
+    SUSPENDED = "SUSPENDED", "Suspended"
+    RESIGNED = "RESIGNED", "Resigned"
+    TERMINATED = "TERMINATED", "Terminated"
+    RETIRED = "RETIRED", "Retired"
