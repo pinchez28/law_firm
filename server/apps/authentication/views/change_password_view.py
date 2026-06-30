@@ -1,29 +1,51 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth import authenticate
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from apps.authentication.serializers.change_password_serializer import (
+    ChangePasswordSerializer,
+)
+from apps.authentication.services.auth_service import AuthService
 
 
 class ChangePasswordView(APIView):
+    """
+    Allows an authenticated user to change their password.
+    """
+
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        user = request.user
+        serializer = ChangePasswordSerializer(
+            data=request.data
+        )
 
-        old_password = request.data.get("old_password")
-        new_password = request.data.get("new_password")
+        serializer.is_valid(raise_exception=True)
 
-        auth_user = authenticate(username=user.email, password=old_password)
+        success, error = AuthService.change_password(
+            user=request.user,
+            current_password=serializer.validated_data[
+                "current_password"
+            ],
+            new_password=serializer.validated_data[
+                "new_password"
+            ],
+        )
 
-        if not auth_user:
+        if not success:
             return Response(
-                {"detail": "Old password is incorrect"},
-                status=status.HTTP_400_BAD_REQUEST
+                {
+                    "detail": error,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        user.set_password(new_password)
-        user.save()
-
         return Response(
-            {"detail": "Password changed successfully"},
-            status=status.HTTP_200_OK
+            {
+                "message": (
+                    "Password changed successfully."
+                )
+            },
+            status=status.HTTP_200_OK,
         )

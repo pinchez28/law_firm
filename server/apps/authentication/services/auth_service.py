@@ -40,6 +40,32 @@ class AuthService:
             "firm": firm,
             "firm_role": firm_role,
         }, None
+    
+    @staticmethod
+    def change_password(
+        *,
+        user,
+        current_password,
+        new_password,
+    ):
+        """
+        Change a user's password and complete first-time onboarding.
+        """
+
+        if not user.check_password(current_password):
+            return False, "Current password is incorrect."
+
+        user.set_password(new_password)
+        user.must_change_password = False
+
+        user.save(
+            update_fields=[
+                "password",
+                "must_change_password",
+            ]
+        )
+
+        return True, None
 
     @staticmethod
     def logout_user(refresh_token: str):

@@ -80,7 +80,6 @@ class CompanyClientService:
             phone_number=validated_data["contact_phone_number"],
             national_id_number=validated_data["contact_national_id_number"],
             role=UserRole.PORTAL_CLIENT,
-            must_change_password=True,
         )
 
         company.user = portal_user

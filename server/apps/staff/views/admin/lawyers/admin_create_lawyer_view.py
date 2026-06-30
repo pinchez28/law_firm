@@ -9,26 +9,25 @@ from apps.common.choices import FirmRole
 
 
 class AdminCreateLawyerView(APIView):
-    """
-    Create a new lawyer for the authenticated user's law firm.
-    """
 
     def post(self, request):
         data = request.data.copy()
 
-        # Force the staff role for this endpoint.
         data["firm_role"] = FirmRole.ASSOCIATE
 
         serializer = StaffCreateSerializer(data=data)
         serializer.is_valid(raise_exception=True)
 
-        lawyer = StaffService.create_staff(
+        staff, temp_password = StaffService.create_staff(
             law_firm=request.user.staff_profile.law_firm,
             validated_data=serializer.validated_data,
             created_by=request.user,
         )
 
         return Response(
-            StaffDetailSerializer(lawyer).data,
+            {
+                "staff": StaffDetailSerializer(staff).data,
+                "temp_password": temp_password,
+            },
             status=status.HTTP_201_CREATED,
         )

@@ -17,29 +17,17 @@ class UserRole(models.TextChoices):
 # ==========================================================
 
 class FirmRole(models.TextChoices):
+    # Lawyers
     MANAGING_PARTNER = "MANAGING_PARTNER", "Managing Partner"
-    SENIOR_PARTNER = "SENIOR_PARTNER", "Senior Partner"
     PARTNER = "PARTNER", "Partner"
-
     ASSOCIATE = "ASSOCIATE", "Associate"
-    SENIOR_ASSOCIATE = "SENIOR_ASSOCIATE", "Senior Associate"
-
-    PUPIL = "PUPIL", "Pupil"
     LEGAL_INTERN = "LEGAL_INTERN", "Legal Intern"
 
+    # Administration
     SECRETARY = "SECRETARY", "Secretary"
-    PARALEGAL = "PARALEGAL", "Paralegal"
-    LEGAL_CLERK = "LEGAL_CLERK", "Legal Clerk"
-
     ACCOUNTANT = "ACCOUNTANT", "Accountant"
     HR = "HR", "Human Resource"
     IT = "IT", "IT Support"
-    OFFICE_ADMINISTRATOR = "OFFICE_ADMINISTRATOR", "Office Administrator"
-    OFFICE_ASSISTANT = "OFFICE_ASSISTANT", "Office Assistant"
-    RECEPTIONIST = "RECEPTIONIST", "Receptionist"
-    MESSENGER = "MESSENGER", "Messenger"
-
-
 # ==========================================================
 # Employment Types
 # ==========================================================

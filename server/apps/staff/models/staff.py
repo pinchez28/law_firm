@@ -52,11 +52,11 @@ class Staff(TimestampedModel):
     )
 
     # department = models.ForeignKey(
-    #     # "firms.Department",
+    #     "firms.Department",
     #     on_delete=models.SET_NULL,
     #     null=True,
     #     blank=True,
-    #     # related_name="staff_members",
+    #     related_name="staff_members",
     # )
 
     department = models.CharField(

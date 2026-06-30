@@ -57,7 +57,7 @@ server/.venv/
 # DJANGO ENV FILES
 
 #################################################
-
+server/apps/firms/bootstrap_firm.py
 server/.env
 server/.env.*
 !server/.env.example
