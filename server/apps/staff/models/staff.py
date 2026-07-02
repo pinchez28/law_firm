@@ -31,7 +31,7 @@ class Staff(TimestampedModel):
     )
 
     law_firm = models.ForeignKey(
-        "firms.LawFirm",
+        "firm.LawFirm",
         on_delete=models.CASCADE,
         related_name="staff_members",
     )
@@ -52,7 +52,7 @@ class Staff(TimestampedModel):
     )
 
     # department = models.ForeignKey(
-    #     "firms.Department",
+    #     "firm.Department",
     #     on_delete=models.SET_NULL,
     #     null=True,
     #     blank=True,

@@ -1,10 +1,12 @@
 from django.db import transaction
+from django.utils import timezone
 
 from apps.users.models import User
 from apps.staff.models.staff import Staff
 from apps.common.choices import EmploymentStatus, UserRole
 from apps.users.services.auth_service import AuthService
-from apps.firms.models.firm_member import LawFirmMember
+from apps.firm.models.firm_member import LawFirmMember
+from apps.staff.services.staff_analytics_service import StaffAnalyticsService
 
 
 class StaffService:
@@ -19,7 +21,6 @@ class StaffService:
     # =========================================================
     # RETRIEVAL
     # =========================================================
-
     @staticmethod
     def list_staff(
         law_firm,
@@ -30,7 +31,10 @@ class StaffService:
         qs = Staff.objects.filter(law_firm=law_firm)
 
         if firm_role:
-            qs = qs.filter(firm_role=firm_role)
+            if isinstance(firm_role, (list, tuple)):
+                qs = qs.filter(firm_role__in=firm_role)
+            else:
+                qs = qs.filter(firm_role=firm_role)
 
         if employment_status:
             qs = qs.filter(employment_status=employment_status)
@@ -42,14 +46,30 @@ class StaffService:
                 | qs.filter(user__email__icontains=search)
             )
 
-        return qs.select_related("user", "law_firm")
+        qs = qs.select_related("user", "law_firm", "reports_to")
+
+        analytics = StaffAnalyticsService(qs)
+
+        return {
+            "queryset": qs,
+            "analytics": analytics,
+        }
 
     @staticmethod
-    def get_staff(staff_id, law_firm):
-        return Staff.objects.select_related("user", "law_firm").get(
+    def get_staff(staff_id, law_firm, firm_role=None):
+        qs = Staff.objects.select_related(
+            "user",
+            "law_firm",
+            "reports_to",
+        ).filter(
             id=staff_id,
             law_firm=law_firm,
         )
+
+        if firm_role:
+            qs = qs.filter(firm_role=firm_role)
+
+        return qs.get()
 
 
     # =========================================================

@@ -3,7 +3,7 @@ from django.db.models.signals import post_migrate
 
 
 class FirmConfig(AppConfig):
-    name = "apps.firms"
+    name = "apps.firm"
 
     def ready(self):
         from .bootstrap import ensure_default_firm

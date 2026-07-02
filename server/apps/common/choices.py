@@ -28,6 +28,24 @@ class FirmRole(models.TextChoices):
     ACCOUNTANT = "ACCOUNTANT", "Accountant"
     HR = "HR", "Human Resource"
     IT = "IT", "IT Support"
+
+    @classmethod
+    def lawyer_roles(cls):
+        return [
+            cls.MANAGING_PARTNER,
+            cls.PARTNER,
+            cls.ASSOCIATE,
+            cls.LEGAL_INTERN,
+        ]
+
+    @classmethod
+    def staff_roles(cls):
+        return [
+            cls.SECRETARY,
+            cls.ACCOUNTANT,
+            cls.HR,
+            cls.IT,
+        ]
 # ==========================================================
 # Employment Types
 # ==========================================================

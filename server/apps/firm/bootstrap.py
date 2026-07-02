@@ -1,4 +1,4 @@
-from apps.firms.models import LawFirm
+from apps.firm.models import LawFirm
 from apps.users.models import User
 
 

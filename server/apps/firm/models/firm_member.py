@@ -14,7 +14,7 @@ class LawFirmMember(TimestampedModel):
     )
 
     firm = models.ForeignKey(
-        "firms.LawFirm",
+        "firm.LawFirm",
         on_delete=models.CASCADE,
         related_name="members",
     )

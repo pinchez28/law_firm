@@ -12,7 +12,7 @@ from apps.clients.models import (
     ContactType,
 )
 
-from apps.firms.models import LawFirmMember
+from apps.firm.models import LawFirmMember
 from apps.clients.utils.passwords import generate_temp_password
 
 

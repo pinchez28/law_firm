@@ -4,7 +4,7 @@ from django.db.models import Count
 from django.utils import timezone
 
 from apps.clients.models import Client
-from apps.firms.models import LawFirmMember
+from apps.firm.models import LawFirmMember
 
 
 class ClientAnalyticsService:

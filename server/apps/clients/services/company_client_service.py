@@ -6,7 +6,7 @@ from apps.clients.models.client_address import ClientAddress
 from apps.clients.models.client_contact import ClientContact, ContactType
 from apps.clients.models.company_client import CompanyClient
 from apps.common.choices import UserRole
-from apps.firms.models import LawFirmMember
+from apps.firm.models import LawFirmMember
 from apps.clients.utils.passwords import generate_temp_password
 
 User = get_user_model()

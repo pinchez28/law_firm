@@ -34,7 +34,7 @@ class Client(models.Model):
     )
 
     firm = models.ForeignKey(
-        "firms.LawFirm",
+        "firm.LawFirm",
         on_delete=models.CASCADE,
         related_name="clients",
     )

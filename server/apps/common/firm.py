@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from apps.firms.models import LawFirmMember
+from apps.firm.models import LawFirmMember
 
 
 def get_user_membership(user):

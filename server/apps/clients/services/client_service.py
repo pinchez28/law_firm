@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 
 from apps.clients.models import Client
-from apps.firms.models import LawFirmMember
+from apps.firm.models import LawFirmMember
 
 
 class ClientService:

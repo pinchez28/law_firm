@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from apps.firms.models import LawFirmMember
+from apps.firm.models import LawFirmMember
 
 
 class AuthService:
