@@ -19,7 +19,6 @@ class FirmRole:
     IT = "IT"
     ACCOUNTANT = "ACCOUNTANT"
     HR = "HR"
-    OFFICE_ASSISTANT = "OFFICE_ASSISTANT"
     OFFICIAL_CLIENT = "OFFICIAL_CLIENT"
 
 
@@ -29,6 +28,5 @@ FIRM_ROLE_CHOICES = [
     (FirmRole.IT, "IT"),
     (FirmRole.ACCOUNTANT, "Accountant"),
     (FirmRole.HR, "Human Resource"),
-    (FirmRole.OFFICE_ASSISTANT, "Office Assistant"),
     (FirmRole.OFFICIAL_CLIENT, "Official Client"),
 ]

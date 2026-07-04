@@ -7,21 +7,27 @@ from apps.staff.serializers.admin.lawyers.admin_lawyer_detail_serializer import 
 from apps.staff.services.admin.lawyers.admin_lawyer_query_service import (
     AdminLawyerQueryService,
 )
+from apps.staff.services.admin.lawyers.admin_lawyer_status_service import (
+    AdminLawyerStatusService,
+)
 from apps.staff.views.admin.lawyers.admin_lawyer_base_view import (
     AdminLawyerBaseView,
 )
 
 
-class AdminLawyerDetailView(AdminLawyerBaseView):
-    def get(self, request, lawyer_id):
+class AdminLawyerDeactivateView(AdminLawyerBaseView):
+    def post(self, request, lawyer_id):
         lawyer = AdminLawyerQueryService.get_lawyer(
             lawyer_id=lawyer_id,
             law_firm=self.get_law_firm(),
         )
 
-        serializer = AdminLawyerDetailSerializer(lawyer)
+        lawyer = AdminLawyerStatusService.deactivate_lawyer(
+            lawyer=lawyer,
+            updated_by=request.user,
+        )
 
         return Response(
-            {"lawyer": serializer.data},
+            {"lawyer": AdminLawyerDetailSerializer(lawyer).data},
             status=status.HTTP_200_OK,
         )

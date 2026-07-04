@@ -1,1 +1,5 @@
-from .staff import Staff
+from .lawyer import Lawyer
+
+__all__ = [
+    "Lawyer",
+]

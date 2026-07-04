@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from apps.firm.models import LawFirm
 
 
@@ -21,6 +22,14 @@ class LawFirmSerializer(serializers.ModelSerializer):
             "description",
             "logo",
             "is_active",
+            "owner_email",
+            "owner_name",
+            "created_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "registration_number",
             "owner_email",
             "owner_name",
             "created_at",

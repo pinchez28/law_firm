@@ -3,11 +3,7 @@ from rest_framework import serializers
 from apps.common.choices import EmploymentStatus
 
 
-class StaffChangeStatusSerializer(serializers.Serializer):
-    """
-    Serializer for changing a staff member's employment status.
-    """
-
+class AdminLawyerChangeStatusSerializer(serializers.Serializer):
     employment_status = serializers.ChoiceField(
         choices=EmploymentStatus.choices,
     )
@@ -22,14 +18,11 @@ class StaffChangeStatusSerializer(serializers.Serializer):
         status = attrs["employment_status"]
         reason = attrs.get("termination_reason")
 
-        if (
-            status == EmploymentStatus.TERMINATED
-            and not reason
-        ):
+        if status == EmploymentStatus.TERMINATED and not reason:
             raise serializers.ValidationError(
                 {
                     "termination_reason": (
-                        "Termination reason is required when terminating a staff member."
+                        "Termination reason is required when terminating a lawyer."
                     )
                 }
             )

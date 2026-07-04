@@ -17,34 +17,25 @@ class UserRole(models.TextChoices):
 # ==========================================================
 
 class FirmRole(models.TextChoices):
-    # Lawyers
-    MANAGING_PARTNER = "MANAGING_PARTNER", "Managing Partner"
-    PARTNER = "PARTNER", "Partner"
-    ASSOCIATE = "ASSOCIATE", "Associate"
-    LEGAL_INTERN = "LEGAL_INTERN", "Legal Intern"
-
-    # Administration
+    LAWYER = "LAWYER", "Lawyer"
     SECRETARY = "SECRETARY", "Secretary"
+    IT = "IT", "IT Support"
     ACCOUNTANT = "ACCOUNTANT", "Accountant"
     HR = "HR", "Human Resource"
-    IT = "IT", "IT Support"
+    OFFICIAL_CLIENT = "OFFICIAL_CLIENT", "Official Client"
 
     @classmethod
     def lawyer_roles(cls):
-        return [
-            cls.MANAGING_PARTNER,
-            cls.PARTNER,
-            cls.ASSOCIATE,
-            cls.LEGAL_INTERN,
-        ]
+        return [cls.LAWYER]
 
     @classmethod
     def staff_roles(cls):
         return [
+            cls.LAWYER,
             cls.SECRETARY,
+            cls.IT,
             cls.ACCOUNTANT,
             cls.HR,
-            cls.IT,
         ]
 # ==========================================================
 # Employment Types

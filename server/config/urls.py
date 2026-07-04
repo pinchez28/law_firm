@@ -7,5 +7,4 @@ urlpatterns = [
     path("api/auth/", include("apps.authentication.urls")),
 
     path("api/admin/", include("api.admin_urls")),
-    path("api/admin/firm/", include("api.admin_urls")),
 ]

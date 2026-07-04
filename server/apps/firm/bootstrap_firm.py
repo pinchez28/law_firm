@@ -160,7 +160,7 @@ def run():
         firm=firm,
         user=owner,
         defaults={
-            "role": FirmRole.MANAGING_PARTNER,
+            "role": FirmRole.LAWYER,
             "created_by": owner,
             "is_active": True,
         },
@@ -174,7 +174,7 @@ def run():
         law_firm=firm,
         defaults={
             "staff_number": FIRM_DATA["staff"]["staff_number"],
-            "firm_role": FirmRole.MANAGING_PARTNER,
+            "firm_role": FirmRole.LAWYER,
             "job_title": FIRM_DATA["staff"]["job_title"],
             "date_hired": date.today(),
         },
