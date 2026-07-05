@@ -1,36 +1,13 @@
 from django.urls import path
 
-from .views import (
-    ClientListView,
-    ClientDetailView,
-    IndividualClientCreateView,
-    CompanyClientCreateView,
-)
+from apps.clients.views.client.client_dashboard_view import ClientDashboardView
+from apps.clients.views.client.client_profile_view import ClientProfileView
+from apps.clients.views.client.client_cases_view import ClientCasesView
+from apps.clients.views.client.client_documents_view import ClientDocumentsView
 
 urlpatterns = [
-    # Client List Endpoint
-    path(
-        "",
-        ClientListView.as_view(),
-        name="client-list",
-    ),
-
-    # Client Detail Endpoint
-    path(
-        "<uuid:client_id>/",
-        ClientDetailView.as_view(),
-        name="client-detail",
-    ),
-    # Individual Client Creation Endpoint
-    path(
-        "individuals/",
-        IndividualClientCreateView.as_view(),
-        name="create-individual-client",
-    ),
-    # Company Client Creation Endpoint
-    path(
-        "companies/",
-        CompanyClientCreateView.as_view(),
-        name="create-company-client",
-    ),
+    path("profile/", ClientProfileView.as_view(), name="client-profile"),
+    path("dashboard/", ClientDashboardView.as_view(), name="client-dashboard"),
+    path("cases/", ClientCasesView.as_view(), name="client-cases"),
+    path("documents/", ClientDocumentsView.as_view(), name="client-documents"),
 ]

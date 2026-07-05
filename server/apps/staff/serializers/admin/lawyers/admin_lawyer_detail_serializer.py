@@ -1,3 +1,5 @@
+from datetime import date
+
 from rest_framework import serializers
 
 from apps.staff.models.lawyer import Lawyer
@@ -20,6 +22,63 @@ class AdminLawyerDetailSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     practice_areas = serializers.StringRelatedField(many=True, read_only=True)
+
+    analytics = serializers.SerializerMethodField()
+
+    def get_analytics(self, obj):
+        today = date.today()
+        tenure_days = None
+        if obj.date_hired:
+            tenure_days = (today - obj.date_hired).days
+
+        engagement_health = "no_data"
+        if obj.is_active:
+            engagement_health = "active"
+        elif obj.employment_status == "TERMINATED":
+            engagement_health = "at_risk"
+        else:
+            engagement_health = "inactive"
+
+        practice_areas = obj.practice_areas
+        if practice_areas is None:
+            practice_area_count = 0
+        elif hasattr(practice_areas, "count"):
+            try:
+                practice_area_count = practice_areas.count()
+            except TypeError:
+                practice_area_count = len(practice_areas)
+        else:
+            practice_area_count = len(practice_areas)
+
+        professional_readiness = {
+            "practice_area_count": practice_area_count,
+            "has_admission_number": bool(obj.admission_number),
+            "has_practicing_certificate": bool(obj.practicing_certificate_number),
+            "is_notary": obj.is_notary,
+            "can_commission_oaths": obj.can_commission_oaths,
+            "is_court_approved": obj.is_court_approved,
+        }
+
+        administrative_status = {
+            "employment_status": obj.employment_status,
+            "employment_type": obj.employment_type,
+            "is_active": obj.is_active,
+            "department": obj.department,
+            "job_title": obj.job_title,
+        }
+
+        return {
+            "tenure_days": tenure_days,
+            "engagement_health": engagement_health,
+            "professional_readiness": professional_readiness,
+            "administrative_status": administrative_status,
+            "profile_completeness": {
+                "has_work_email": bool(obj.work_email),
+                "has_work_phone": bool(obj.work_phone),
+                "has_office_location": bool(obj.office_location),
+                "has_professional_summary": bool(obj.professional_summary),
+            },
+        }
 
     class Meta:
         model = Lawyer
@@ -60,5 +119,6 @@ class AdminLawyerDetailSerializer(serializers.ModelSerializer):
             "is_active",
             "created_at",
             "updated_at",
+            "analytics",
         ]
         read_only_fields = fields

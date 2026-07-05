@@ -1,19 +1,13 @@
-from apps.common.choices import EmploymentStatus
+from django.db import transaction
 
 
 class AdminLawyerDeleteService:
     """
-    Soft-deletes lawyers from admin workflows.
+    Permanently deletes a lawyer and their user identity from the database.
     """
 
     @staticmethod
+    @transaction.atomic
     def delete_lawyer(*, lawyer, deleted_by):
-        lawyer.is_active = False
-        lawyer.employment_status = EmploymentStatus.TERMINATED
-
-        if not lawyer.termination_reason:
-            lawyer.termination_reason = "Deleted by administrator."
-
-        lawyer.save()
-
+        lawyer.user.delete()
         return lawyer
