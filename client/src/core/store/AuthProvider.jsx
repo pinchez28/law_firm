@@ -63,7 +63,9 @@ const AuthProvider = ({ children }) => {
   const firmRole = user?.firm_role;
 
   const isAdmin = role === 'ADMIN';
-  const isClient = role === 'CLIENT';
+  const isOfficialClient = role === 'OFFICIAL_CLIENT';
+  const isPortalClient = role === 'PORTAL_CLIENT';
+  const isClient = isOfficialClient || isPortalClient;
   const isStaff = role === 'STAFF';
 
   const isLawyer = firmRole === 'LAWYER';
@@ -86,6 +88,8 @@ const AuthProvider = ({ children }) => {
     // helpers
     isAdmin,
     isClient,
+    isOfficialClient,
+    isPortalClient,
     isStaff,
     isLawyer,
     isSecretary,

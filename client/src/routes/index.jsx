@@ -609,7 +609,7 @@ const AppRoutes = () => {
           path='/client/*'
           element={
             <ProtectedRoute>
-              <RoleRoute allowedRoles={['CLIENT']}>
+              <RoleRoute allowedRoles={['OFFICIAL_CLIENT']}>
                 <ClientLayoutWrapper />
               </RoleRoute>
             </ProtectedRoute>
@@ -631,7 +631,7 @@ const AppRoutes = () => {
           path='/portal/*'
           element={
             <ProtectedRoute>
-              <RoleRoute allowedRoles={['CLIENT']}>
+              <RoleRoute allowedRoles={['PORTAL_CLIENT']}>
                 <PortalLayoutWrapper />
               </RoleRoute>
             </ProtectedRoute>

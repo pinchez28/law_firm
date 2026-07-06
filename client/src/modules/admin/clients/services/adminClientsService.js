@@ -5,11 +5,29 @@ import axiosInstance from '@/core/api/axios';
 ========================================================= */
 
 const adminClientsService = {
+  createEndpoints: {
+    INDIVIDUAL: '/admin/clients/individuals/create/',
+    COMPANY: '/admin/clients/companies/create/',
+    SACCO: '/admin/clients/companies/create/',
+    COOPERATIVE: '/admin/clients/companies/create/',
+    PARTNERSHIP: '/admin/clients/partnerships/create/',
+    NGO: '/admin/clients/ngos/create/',
+    ASSOCIATION: '/admin/clients/ngos/create/',
+    RELIGIOUS: '/admin/clients/ngos/create/',
+    TRUST: '/admin/clients/trusts/create/',
+    ESTATE: '/admin/clients/estates/create/',
+    GOVERNMENT: '/admin/clients/government/create/',
+    SCHOOL: '/admin/clients/government/create/',
+  },
+
   /* ======================================================
      CREATE INDIVIDUAL CLIENT
   ====================================================== */
   async createIndividualClient(payload) {
-    const { data } = await axiosInstance.post('/clients/individuals/', payload);
+    const { data } = await axiosInstance.post(
+      this.createEndpoints.INDIVIDUAL,
+      payload,
+    );
 
     return data;
   },
@@ -18,8 +36,18 @@ const adminClientsService = {
      CREATE COMPANY CLIENT  🔴 ADD THIS
   ====================================================== */
   async createCompanyClient(payload) {
-    const { data } = await axiosInstance.post('/clients/companies/', payload);
+    const { data } = await axiosInstance.post(
+      this.createEndpoints.COMPANY,
+      payload,
+    );
 
+    return data;
+  },
+
+  async createClient(payload, clientType = 'INDIVIDUAL') {
+    const endpoint =
+      this.createEndpoints[clientType] || this.createEndpoints.INDIVIDUAL;
+    const { data } = await axiosInstance.post(endpoint, payload);
     return data;
   },
 
@@ -27,20 +55,35 @@ const adminClientsService = {
      CLIENT LIST
   ====================================================== */
   async getClients(params = {}) {
-    const { data } = await axiosInstance.get('/clients/', {
+    const { data } = await axiosInstance.get('/admin/clients/', {
       params,
     });
 
-    return data;
+    return {
+      ...data,
+      analytics: data.analytics || data.metadata || {},
+    };
   },
 
   /* ======================================================
      CLIENT DETAILS
   ====================================================== */
   async getClientDetails(clientId) {
-    const { data } = await axiosInstance.get(`/clients/${clientId}/`);
+    const { data } = await axiosInstance.get(`/admin/clients/${clientId}/`);
 
-    return data;
+    const wrapper = data.client || {};
+    const client = wrapper.detail || wrapper;
+
+    return {
+      ...data,
+      client,
+      analytics: data.analytics || {
+        addresses: client.addresses?.length ?? 0,
+        contacts: client.contacts?.length ?? 0,
+        documents: client.documents?.length ?? 0,
+        lifecycle_status: client.lifecycle_status,
+      },
+    };
   },
 
   /* ======================================================
@@ -48,7 +91,7 @@ const adminClientsService = {
   ====================================================== */
   async updateClient(clientId, payload) {
     const { data } = await axiosInstance.patch(
-      `/clients/${clientId}/`,
+      `/admin/clients/${clientId}/`,
       payload,
     );
 
@@ -59,7 +102,7 @@ const adminClientsService = {
      DELETE CLIENT
   ====================================================== */
   async deleteClient(clientId) {
-    await axiosInstance.delete(`/clients/${clientId}/`);
+    await axiosInstance.delete(`/admin/clients/${clientId}/delete/`);
   },
 };
 

@@ -29,13 +29,8 @@ export const useAdminClients = (params = {}) => {
   ========================================================= */
 
   const createClientMutation = useMutation({
-    mutationFn: ({ payload, clientType }) => {
-      if (clientType === 'COMPANY') {
-        return adminClientsService.createCompanyClient(payload);
-      }
-
-      return adminClientsService.createIndividualClient(payload);
-    },
+    mutationFn: ({ payload, clientType }) =>
+      adminClientsService.createClient(payload, clientType),
   });
 
   /* =========================================================

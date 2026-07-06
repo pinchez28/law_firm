@@ -37,8 +37,8 @@ export default function AdminClientDetailsPage() {
     );
   }
 
-  const analytics = data.analytics;
-  const client = data.client;
+  const analytics = data?.analytics ?? {};
+  const client = data?.client ?? {};
 
   const hasValue = (value) => {
     if (value === null || value === undefined) return false;
@@ -105,21 +105,24 @@ export default function AdminClientDetailsPage() {
     },
   ].filter((field) => hasValue(field.value));
 
-  const profileFields = client.individual_profile
-    ? [
-        {
-          label: 'Gender',
-          value: enumLabel(client.individual_profile.gender),
-        },
-        {
-          label: 'Occupation',
-          value: titleCase(client.individual_profile.occupation),
-        },
-        {
-          label: 'Marital Status',
-          value: enumLabel(client.individual_profile.marital_status),
-        },
-      ].filter((field) => hasValue(field.value))
+  const formatProfileLabel = (key) =>
+    titleCase(key.replace(/_/g, ' '));
+
+  const formatProfileValue = (value) => {
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    if (typeof value === 'string' && /^[A-Z0-9_]+$/.test(value)) {
+      return enumLabel(value);
+    }
+    return value;
+  };
+
+  const profileFields = client.type_profile
+    ? Object.entries(client.type_profile)
+        .filter(([key, value]) => key !== 'id' && hasValue(value))
+        .map(([key, value]) => ({
+          label: formatProfileLabel(key),
+          value: formatProfileValue(value),
+        }))
     : [];
 
   return (
@@ -132,19 +135,19 @@ export default function AdminClientDetailsPage() {
       />
 
       <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
-        <StatsCard title='Addresses' value={analytics.addresses} color='blue' />
+        <StatsCard title='Addresses' value={analytics.addresses ?? 0} color='blue' />
 
-        <StatsCard title='Contacts' value={analytics.contacts} color='green' />
+        <StatsCard title='Contacts' value={analytics.contacts ?? 0} color='green' />
 
         <StatsCard
           title='Documents'
-          value={analytics.documents}
+          value={analytics.documents ?? 0}
           color='purple'
         />
 
         <StatsCard
           title='Status'
-          value={enumLabel(analytics.lifecycle_status)}
+          value={enumLabel(analytics.lifecycle_status ?? client.lifecycle_status)}
           color='yellow'
         />
       </div>
@@ -164,7 +167,9 @@ export default function AdminClientDetailsPage() {
 
       {profileFields.length > 0 && (
         <Card className='p-6'>
-          <h3 className='text-lg font-semibold mb-4'>Individual Profile</h3>
+          <h3 className='text-lg font-semibold mb-4'>
+            {enumLabel(client.client_type)} Profile
+          </h3>
 
           <div className='grid md:grid-cols-3 gap-4'>
             {profileFields.map((field) => (
@@ -180,7 +185,7 @@ export default function AdminClientDetailsPage() {
       <Card className='p-6'>
         <h3 className='text-lg font-semibold mb-4'>Addresses</h3>
 
-        {client.addresses.length === 0 ? (
+        {(client.addresses ?? []).length === 0 ? (
           <p>No addresses available.</p>
         ) : (
           client.addresses.map((address) => {
@@ -234,7 +239,7 @@ export default function AdminClientDetailsPage() {
       <Card className='p-6'>
         <h3 className='text-lg font-semibold mb-4'>Contacts</h3>
 
-        {client.contacts.length === 0 ? (
+        {(client.contacts ?? []).length === 0 ? (
           <p>No contacts available.</p>
         ) : (
           client.contacts.map((contact) => {

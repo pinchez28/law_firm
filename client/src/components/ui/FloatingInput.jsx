@@ -13,6 +13,7 @@ export default function FloatingInput({
   disabled = false,
   className = '',
   noFloat = false,
+  ...props
 }) {
   const [focused, setFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -62,6 +63,7 @@ export default function FloatingInput({
           disabled={disabled}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
+          {...props}
           className={`
             w-full px-4 py-4 rounded-xl bg-transparent outline-none
             ${textClass}

@@ -2,15 +2,17 @@ import axiosInstance from '@/core/api/axios';
 
 const lawyerCasesService = {
   async getMyCases(params = {}) {
-    const { data } = await axiosInstance.get('/cases/my-cases/', { params });
+    const { data } = await axiosInstance.get('/staff/lawyer/cases/', {
+      params,
+    });
 
-    return data; // array directly
+    return data;
   },
 
   async getMyCaseById(caseId) {
-    const { data } = await axiosInstance.get(`/cases/my-cases/${caseId}/`);
+    const { data } = await axiosInstance.get(`/staff/lawyer/cases/${caseId}/`);
 
-    return data.data; // 👈 IMPORTANT FIX (unwrap backend)
+    return data.case || data;
   },
 };
 

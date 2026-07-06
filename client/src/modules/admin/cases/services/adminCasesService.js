@@ -28,8 +28,13 @@ const adminCasesService = {
   },
 
   async getLawyers() {
-    const { data } = await axiosInstance.get('/auth/staff/lawyers/');
-    return data;
+    const { data } = await axiosInstance.get('/admin/staff/lawyers/');
+    return {
+      ...data,
+      data: {
+        lawyers: data.lawyers || [],
+      },
+    };
   },
 
   async getSecretaries() {

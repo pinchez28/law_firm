@@ -1,8 +1,9 @@
 export const ROLE_DASHBOARD = {
-  ADMIN: "/admin",
+  ADMIN: "/admin/dashboard",
 
-  CLIENT: "/client",
+  OFFICIAL_CLIENT: "/client/dashboard",
+  PORTAL_CLIENT: "/portal/dashboard",
 
-  LAWYER: "/staff/lawyer",
-  SECRETARY: "/staff/secretary",
+  LAWYER: "/lawyer/dashboard",
+  SECRETARY: "/secretary/dashboard",
 };

@@ -31,39 +31,43 @@ export default function Login() {
 
       if (!data) throw new Error('Invalid login response');
 
-      const { user, access, refresh } = data;
+      const { user, access, refresh, firm_role: firmRole } = data;
 
       if (!user || !access || !refresh) {
         throw new Error('Invalid login response from server');
       }
 
+      const sessionUser = {
+        ...user,
+        firm_role: firmRole ?? user.firm_role ?? null,
+      };
+
       /* =====================================================
          TOKEN STORAGE (single, consistent auth source)
       ===================================================== */
-      saveAuthSession({ user, access, refresh }, rememberMe);
+      saveAuthSession({ user: sessionUser, access, refresh }, rememberMe);
 
       /* =====================================================
          AUTH CONTEXT UPDATE (UI state only)
       ===================================================== */
-      authLogin({ user, access, refresh }, rememberMe);
+      authLogin({ user: sessionUser, access, refresh }, rememberMe);
 
       /* =====================================================
          ROLE ROUTING
       ===================================================== */
-      const role = user.role;
-      const firmRole = user.firm_role;
+      const role = sessionUser.role;
+      const sessionFirmRole = sessionUser.firm_role;
 
       if (role === 'ADMIN') return navigate('/admin/dashboard');
 
-      if (role === 'CLIENT') {
-        if (!firmRole) return navigate('/portal/dashboard');
-        if (firmRole === 'CLIENT') return navigate('/client/dashboard');
-        return navigate('/');
-      }
+      if (role === 'OFFICIAL_CLIENT') return navigate('/client/dashboard');
+
+      if (role === 'PORTAL_CLIENT') return navigate('/portal/dashboard');
 
       if (role === 'STAFF') {
-        if (firmRole === 'LAWYER') return navigate('/lawyer/dashboard');
-        if (firmRole === 'SECRETARY') return navigate('/secretary/dashboard');
+        if (sessionFirmRole === 'LAWYER') return navigate('/lawyer/dashboard');
+        if (sessionFirmRole === 'SECRETARY')
+          return navigate('/secretary/dashboard');
         return navigate('/');
       }
 

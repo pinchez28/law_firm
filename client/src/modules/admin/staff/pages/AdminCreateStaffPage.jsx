@@ -22,9 +22,20 @@ export default function AdminCreateStaffPage() {
     national_id: '',
     phone_number: '',
     email: '',
-    password: '',
-    firm_role: 'SECRETARY',
-    permissions: [],
+    firm_role: 'LAWYER',
+    department: '',
+    job_title: 'Lawyer',
+    staff_number: '',
+    employee_number: '',
+    work_email: '',
+    work_phone: '',
+    office_location: '',
+    admission_number: '',
+    practicing_certificate_number: '',
+    bar_admission_date: '',
+    employment_type: 'PERMANENT',
+    date_hired: new Date().toISOString().slice(0, 10),
+    professional_summary: '',
   });
 
   const handleChange = (e) => {
@@ -52,6 +63,10 @@ export default function AdminCreateStaffPage() {
     try {
       setIsSubmitting(true);
 
+      if (formData.firm_role !== 'LAWYER') {
+        throw new Error('Only lawyer creation is connected at the moment.');
+      }
+
       await createStaff(formData);
 
       await Swal.fire({
@@ -67,19 +82,16 @@ export default function AdminCreateStaffPage() {
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: error?.response?.data?.message || 'Failed to create staff.',
+        text:
+          error?.message ||
+          error?.response?.data?.detail ||
+          error?.response?.data?.message ||
+          'Failed to create staff.',
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const availablePermissions = [
-    'manage_cases',
-    'schedule_events',
-    'manage_documents',
-    'manage_clients',
-  ];
 
   return (
     <div className='space-y-6 p-4 md:p-6 animate-fadeIn'>
@@ -123,15 +135,6 @@ export default function AdminCreateStaffPage() {
             required
           />
 
-          <FloatingInput
-            label='Password'
-            type='password'
-            name='password'
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-
           <div>
             <label className='block text-sm font-medium mb-2'>Staff Role</label>
 
@@ -163,28 +166,69 @@ export default function AdminCreateStaffPage() {
   '
             >
               <option value='LAWYER'>Lawyer</option>
-              <option value='SECRETARY'>Secretary</option>
             </select>
           </div>
 
-          <div>
-            <label className='block text-sm font-medium mb-3'>
-              Permissions
-            </label>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <FloatingInput
+              label='Admission Number'
+              name='admission_number'
+              value={formData.admission_number}
+              onChange={handleChange}
+              required
+            />
 
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-              {availablePermissions.map((permission) => (
-                <label key={permission} className='flex items-center gap-2'>
-                  <input
-                    type='checkbox'
-                    checked={formData.permissions.includes(permission)}
-                    onChange={() => handlePermissionChange(permission)}
-                  />
+            <FloatingInput
+              label='Date Hired'
+              type='date'
+              name='date_hired'
+              value={formData.date_hired}
+              onChange={handleChange}
+              required
+            />
 
-                  <span>{permission.replaceAll('_', ' ')}</span>
-                </label>
-              ))}
-            </div>
+            <FloatingInput
+              label='Department'
+              name='department'
+              value={formData.department}
+              onChange={handleChange}
+            />
+
+            <FloatingInput
+              label='Job Title'
+              name='job_title'
+              value={formData.job_title}
+              onChange={handleChange}
+            />
+
+            <FloatingInput
+              label='Staff Number'
+              name='staff_number'
+              value={formData.staff_number}
+              onChange={handleChange}
+            />
+
+            <FloatingInput
+              label='Employee Number'
+              name='employee_number'
+              value={formData.employee_number}
+              onChange={handleChange}
+            />
+
+            <FloatingInput
+              label='Work Email'
+              type='email'
+              name='work_email'
+              value={formData.work_email}
+              onChange={handleChange}
+            />
+
+            <FloatingInput
+              label='Office Location'
+              name='office_location'
+              value={formData.office_location}
+              onChange={handleChange}
+            />
           </div>
 
           <div className='flex gap-3 pt-4'>
