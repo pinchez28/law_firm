@@ -204,6 +204,9 @@ const AuthProvider = ({ children }) => {
 
   const isLawyer = firmRole === 'LAWYER';
   const isSecretary = firmRole === 'SECRETARY';
+  const isAccountant = firmRole === 'ACCOUNTANT';
+  const isHR = firmRole === 'HR';
+  const isIT = firmRole === 'IT';
 
   const value = {
     user,
@@ -227,6 +230,9 @@ const AuthProvider = ({ children }) => {
     isStaff,
     isLawyer,
     isSecretary,
+    isAccountant,
+    isHR,
+    isIT,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

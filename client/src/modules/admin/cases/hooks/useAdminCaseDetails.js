@@ -52,6 +52,21 @@ export default function useCaseDetails(caseId) {
     },
   });
 
+  const reassignSecretaryMutation = useMutation({
+    mutationFn: ({ caseId, membershipId }) =>
+      adminCasesService.reassignSecretary(caseId, membershipId),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['admin-case', caseId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ['admin-cases'],
+      });
+    },
+  });
+
   return {
     caseData,
 
@@ -66,5 +81,7 @@ export default function useCaseDetails(caseId) {
 
     reassignLawyer: reassignLawyerMutation.mutateAsync,
     isReassigning: reassignLawyerMutation.isPending,
+    reassignSecretary: reassignSecretaryMutation.mutateAsync,
+    isReassigningSecretary: reassignSecretaryMutation.isPending,
   };
 }

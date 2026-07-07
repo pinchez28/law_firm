@@ -40,13 +40,14 @@ export default function SecretaryCaseDetailsPage() {
 
   const safe = (value, fallback = 'N/A') =>
     value !== null && value !== undefined && value !== '' ? value : fallback;
+  const pageTitle = safe(caseData.title, safe(caseData.case_number, 'Case Details'));
 
   return (
     <div className='space-y-6 p-4 md:p-6 animate-fadeIn'>
       <BackLink label='Back to Cases' fallbackPath='/staff/secretary/cases' />
 
       <SectionHeading
-        title='Case Details'
+        title={pageTitle}
         subtitle='Assigned legal matter overview'
       />
 

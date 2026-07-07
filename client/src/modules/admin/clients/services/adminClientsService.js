@@ -58,9 +58,14 @@ const adminClientsService = {
     const { data } = await axiosInstance.get('/admin/clients/', {
       params,
     });
+    const clients = (data.clients || []).map((client) => ({
+      ...client,
+      client_id: client.client_id || client.id,
+    }));
 
     return {
       ...data,
+      clients,
       analytics: data.analytics || data.metadata || {},
     };
   },

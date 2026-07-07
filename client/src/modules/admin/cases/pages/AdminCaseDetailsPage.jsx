@@ -59,6 +59,7 @@ const AdminCaseDetailsPage = () => {
 
   const safe = (value, fallback = 'N/A') =>
     value !== null && value !== undefined && value !== '' ? value : fallback;
+  const pageTitle = safe(caseData.title, safe(caseData.case_number, 'Case Details'));
 
   const currentSecretaryId =
     selectedSecretary ||
@@ -169,8 +170,8 @@ const AdminCaseDetailsPage = () => {
       <BackLink label='Back to Cases' fallbackPath='/admin/cases' />
 
       <SectionHeading
-        title='Case Details'
-        subtitle='Full case information and activity'
+        title={pageTitle}
+        subtitle='Case details and activity'
       />
 
       <Card className='p-6'>

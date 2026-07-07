@@ -12,8 +12,8 @@ const secretaryCasesService = {
 
   // DETAIL
   async getMyCaseById(caseId) {
-    const { cases } = await this.getMyCases();
-    return cases.find((caseItem) => String(caseItem.id) === String(caseId));
+    const { data } = await axiosInstance.get(`/staff/secretary/cases/${caseId}/`);
+    return data.case || data;
   },
 
   // CREATE (NEW SECRETARY ENDPOINT)

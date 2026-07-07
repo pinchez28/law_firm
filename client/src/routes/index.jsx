@@ -19,6 +19,9 @@ import AdminLayoutWrapper from '@/layouts/admin/AdminLayoutWrapper';
 
 import LawyerLayoutWrapper from '@/layouts/staff/lawyer/LawyerLayoutWrapper';
 import SecretaryLayoutWrapper from '@/layouts/staff/secretary/SecretaryLayoutWrapper';
+import AccountantLayoutWrapper from '@/layouts/staff/accountant/AccountantLayoutWrapper';
+import HRLayoutWrapper from '@/layouts/staff/hr/HRLayoutWrapper';
+import ITLayoutWrapper from '@/layouts/staff/it/ITLayoutWrapper';
 
 import ClientLayoutWrapper from '@/layouts/client/ClientLayoutWrapper';
 import PortalLayoutWrapper from '@/layouts/portal/ClientLayoutWrapper';
@@ -313,6 +316,72 @@ const SecretaryTasks = lazy(
 const SecretaryProfile = lazy(
   () => import('@/modules/staff/secretary/profile/pages/SecretaryProfile'),
 );
+
+/* =========================================================
+   ACCOUNTANT
+========================================================= */
+const AccountantDashboard = lazy(
+  () => import('@/modules/staff/accountant/pages/AccountantDashboard'),
+);
+const AccountantBilling = lazy(
+  () => import('@/modules/staff/accountant/pages/AccountantBilling'),
+);
+const AccountantTasks = lazy(
+  () => import('@/modules/staff/accountant/pages/AccountantTasks'),
+);
+const AccountantDocuments = lazy(
+  () => import('@/modules/staff/accountant/pages/AccountantDocuments'),
+);
+const AccountantCalendar = lazy(
+  () => import('@/modules/staff/accountant/pages/AccountantCalendar'),
+);
+const AccountantNotifications = lazy(
+  () => import('@/modules/staff/accountant/pages/AccountantNotifications'),
+);
+const AccountantProfile = lazy(
+  () => import('@/modules/staff/accountant/pages/AccountantProfile'),
+);
+const AccountantSecurity = lazy(
+  () => import('@/modules/staff/accountant/pages/AccountantSecurity'),
+);
+
+/* =========================================================
+   HR
+========================================================= */
+const HRDashboard = lazy(
+  () => import('@/modules/staff/hr/pages/HRDashboard'),
+);
+const HRStaffRecords = lazy(
+  () => import('@/modules/staff/hr/pages/HRStaffRecords'),
+);
+const HRTasks = lazy(() => import('@/modules/staff/hr/pages/HRTasks'));
+const HRDocuments = lazy(
+  () => import('@/modules/staff/hr/pages/HRDocuments'),
+);
+const HRCalendar = lazy(() => import('@/modules/staff/hr/pages/HRCalendar'));
+const HRNotifications = lazy(
+  () => import('@/modules/staff/hr/pages/HRNotifications'),
+);
+const HRProfile = lazy(() => import('@/modules/staff/hr/pages/HRProfile'));
+const HRSecurity = lazy(() => import('@/modules/staff/hr/pages/HRSecurity'));
+
+/* =========================================================
+   IT
+========================================================= */
+const ITDashboard = lazy(
+  () => import('@/modules/staff/it/pages/ITDashboard'),
+);
+const ITSystems = lazy(() => import('@/modules/staff/it/pages/ITSystems'));
+const ITTasks = lazy(() => import('@/modules/staff/it/pages/ITTasks'));
+const ITDocuments = lazy(
+  () => import('@/modules/staff/it/pages/ITDocuments'),
+);
+const ITCalendar = lazy(() => import('@/modules/staff/it/pages/ITCalendar'));
+const ITNotifications = lazy(
+  () => import('@/modules/staff/it/pages/ITNotifications'),
+);
+const ITProfile = lazy(() => import('@/modules/staff/it/pages/ITProfile'));
+const ITSecurity = lazy(() => import('@/modules/staff/it/pages/ITSecurity'));
 
 /* =========================================================
    CLIENT (FIRM)
@@ -610,6 +679,72 @@ const AppRoutes = () => {
 
           {/* PROFILE */}
           <Route path='profile' element={<SecretaryProfile />} />
+        </Route>
+
+        {/* ACCOUNTANT */}
+        <Route
+          path='/accountant/*'
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={['ACCOUNTANT']}>
+                <AccountantLayoutWrapper />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        >
+          <Route path='' element={<Navigate to='dashboard' replace />} />
+          <Route path='dashboard' element={<AccountantDashboard />} />
+          <Route path='billing' element={<AccountantBilling />} />
+          <Route path='tasks' element={<AccountantTasks />} />
+          <Route path='documents' element={<AccountantDocuments />} />
+          <Route path='calendar' element={<AccountantCalendar />} />
+          <Route path='notifications' element={<AccountantNotifications />} />
+          <Route path='profile' element={<AccountantProfile />} />
+          <Route path='security' element={<AccountantSecurity />} />
+        </Route>
+
+        {/* HR */}
+        <Route
+          path='/hr/*'
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={['HR']}>
+                <HRLayoutWrapper />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        >
+          <Route path='' element={<Navigate to='dashboard' replace />} />
+          <Route path='dashboard' element={<HRDashboard />} />
+          <Route path='staff-records' element={<HRStaffRecords />} />
+          <Route path='tasks' element={<HRTasks />} />
+          <Route path='documents' element={<HRDocuments />} />
+          <Route path='calendar' element={<HRCalendar />} />
+          <Route path='notifications' element={<HRNotifications />} />
+          <Route path='profile' element={<HRProfile />} />
+          <Route path='security' element={<HRSecurity />} />
+        </Route>
+
+        {/* IT */}
+        <Route
+          path='/it/*'
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={['IT']}>
+                <ITLayoutWrapper />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        >
+          <Route path='' element={<Navigate to='dashboard' replace />} />
+          <Route path='dashboard' element={<ITDashboard />} />
+          <Route path='systems' element={<ITSystems />} />
+          <Route path='tasks' element={<ITTasks />} />
+          <Route path='documents' element={<ITDocuments />} />
+          <Route path='calendar' element={<ITCalendar />} />
+          <Route path='notifications' element={<ITNotifications />} />
+          <Route path='profile' element={<ITProfile />} />
+          <Route path='security' element={<ITSecurity />} />
         </Route>
 
         {/* CLIENT */}

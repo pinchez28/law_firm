@@ -6,4 +6,7 @@ export const ROLE_DASHBOARD = {
 
   LAWYER: "/lawyer/dashboard",
   SECRETARY: "/secretary/dashboard",
+  ACCOUNTANT: "/accountant/dashboard",
+  HR: "/hr/dashboard",
+  IT: "/it/dashboard",
 };

@@ -43,6 +43,14 @@ const SecretaryClientDetails = () => {
   }
 
   const safe = (val, fallback = 'N/A') => val || fallback;
+  const pageTitle = safe(
+    client.full_name ||
+      client.display_name ||
+      client.organization_name ||
+      client.company_name ||
+      client.name,
+    'Client Details',
+  );
 
   return (
     <div style={{ padding: 24 }}>
@@ -50,7 +58,7 @@ const SecretaryClientDetails = () => {
         <BackLink label='Back to Clients' fallbackPath='/secretary/clients' />
       </div>
 
-      <SectionHeading title='Client Details' />
+      <SectionHeading title={pageTitle} subtitle='Client Details' />
 
       {/* CLIENT HEADER */}
       <div

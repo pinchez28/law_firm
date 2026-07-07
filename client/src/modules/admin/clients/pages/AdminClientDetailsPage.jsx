@@ -39,6 +39,14 @@ export default function AdminClientDetailsPage() {
 
   const analytics = data?.analytics ?? {};
   const client = data?.client ?? {};
+  const pageTitle = titleCase(
+    client.full_name ||
+      client.display_name ||
+      client.organization_name ||
+      client.company_name ||
+      client.name ||
+      'Client Details',
+  );
 
   const hasValue = (value) => {
     if (value === null || value === undefined) return false;
@@ -130,7 +138,7 @@ export default function AdminClientDetailsPage() {
       <BackLink label='Back to Clients' fallbackPath='/admin/clients' />
 
       <SectionHeading
-        title={titleCase(client.full_name)}
+        title={pageTitle}
         subtitle='Client Details'
       />
 

@@ -29,16 +29,40 @@ const adminCasesService = {
 
   async getLawyers() {
     const { data } = await axiosInstance.get('/admin/staff/lawyers/');
+    const lawyers = (data.lawyers || []).map((lawyer) => ({
+      ...lawyer,
+      membership_id: lawyer.membership_id || lawyer.id,
+    }));
     return {
       ...data,
       data: {
-        lawyers: data.lawyers || [],
+        lawyers,
       },
     };
   },
 
   async getSecretaries() {
-    const { data } = await axiosInstance.get('/auth/staff/secretaries/');
+    const { data } = await axiosInstance.get('/admin/staff/secretaries/');
+    const secretaries = (data.secretaries || []).map((secretary) => ({
+      ...secretary,
+      membership_id: secretary.membership_id || secretary.id,
+    }));
+    return {
+      ...data,
+      data: {
+        secretaries,
+      },
+    };
+  },
+
+  async reassignSecretary(caseId, membershipId) {
+    const { data } = await axiosInstance.patch(
+      `/cases/${caseId}/reassign-secretary/`,
+      {
+        membership_id: membershipId,
+      },
+    );
+
     return data;
   },
 

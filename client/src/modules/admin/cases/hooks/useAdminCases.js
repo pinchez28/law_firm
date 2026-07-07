@@ -1,38 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import adminCasesService from '@/modules/admin/cases/services/adminCasesService';
 
-export default function useAdminCases() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchCases = async () => {
-      try {
-        setLoading(true);
-
-        const result = await adminCasesService.getCases();
-
-        // 🔥 NORMALIZE HERE
-        const payload = result?.data ?? result;
-
-        setData(payload);
-      } catch (err) {
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCases();
-  }, []);
+export default function useAdminCases(params = {}) {
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['admin-cases', params],
+    queryFn: async () => {
+      const result = await adminCasesService.getCases(params);
+      return result?.data ?? result;
+    },
+  });
 
   return {
     data,
-    loading,
+    loading: isLoading,
+    isLoading,
+    isFetching,
     error,
+    refetch,
 
-    // ✅ FIXED ACCESS PATH
     summary: data?.summary,
     cases: data?.cases || [],
     lawyerPerformance: data?.lawyer_performance || [],

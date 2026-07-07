@@ -41,6 +41,9 @@ export default function Login() {
     if (role === 'STAFF') {
       if (sessionFirmRole === 'LAWYER') return navigate('/lawyer/dashboard', { replace: true });
       if (sessionFirmRole === 'SECRETARY') return navigate('/secretary/dashboard', { replace: true });
+      if (sessionFirmRole === 'ACCOUNTANT') return navigate('/accountant/dashboard', { replace: true });
+      if (sessionFirmRole === 'HR') return navigate('/hr/dashboard', { replace: true });
+      if (sessionFirmRole === 'IT') return navigate('/it/dashboard', { replace: true });
       return navigate('/', { replace: true });
     }
 

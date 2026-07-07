@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import staffService from '@/modules/admin/staff/services/adminStaffService';
@@ -16,7 +16,9 @@ const staffKeys = {
 
 const SingleStaffDetailsPage = () => {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
+  const role = searchParams.get('role');
 
   const [, setNewPermission] = useState('');
 
@@ -25,9 +27,9 @@ const SingleStaffDetailsPage = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: staffKeys.detail(id),
+    queryKey: [...staffKeys.detail(id), role],
     queryFn: async () => {
-      const response = await staffService.getStaffDetails(id);
+      const response = await staffService.getStaffDetails(id, role);
       return response.data;
     },
     enabled: !!id,
@@ -37,6 +39,7 @@ const SingleStaffDetailsPage = () => {
     mutationFn: async (permissions) => {
       return await staffService.updateStaffPermissions(id, {
         permissions,
+        role,
       });
     },
     onSuccess: () => {
@@ -59,13 +62,17 @@ const SingleStaffDetailsPage = () => {
   const recentCases = staff.recent_cases || [];
 
   const safe = (v, fallback = 'N/A') => v || fallback;
+  const pageTitle = safe(user.full_name, 'Staff Details');
 
   return (
     <div style={{ padding: 24 }}>
       <div style={{ marginBottom: 16 }}>
         <BackLink label='Back to Staff' fallbackPath='/admin/staff' />
       </div>
-      <SectionHeading title='Staff Full Details Page' />
+      <SectionHeading
+        title={pageTitle}
+        subtitle={`${safe(membership.role, 'Staff')} details and permissions`}
+      />
       {/* STAFF HEADER */}
       <div
         style={{

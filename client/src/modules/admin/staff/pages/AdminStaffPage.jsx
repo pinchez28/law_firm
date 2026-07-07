@@ -9,7 +9,9 @@ import {
   UserX,
   Scale,
   Briefcase,
-  FileCheck,
+  Banknote,
+  MonitorCog,
+  UsersRound,
 } from 'lucide-react';
 
 import { useAdminStaff } from '@/modules/admin/staff/hooks/useAdminStaff';
@@ -120,6 +122,9 @@ export default function AdminStaffPage() {
     const styles = {
       LAWYER: 'bg-blue-100 text-blue-800',
       SECRETARY: 'bg-purple-100 text-purple-800',
+      ACCOUNTANT: 'bg-emerald-100 text-emerald-800',
+      HR: 'bg-amber-100 text-amber-800',
+      IT: 'bg-cyan-100 text-cyan-800',
       ADMIN: 'bg-red-100 text-red-800',
     };
 
@@ -180,7 +185,7 @@ export default function AdminStaffPage() {
       </div>
 
       {/* Stats */}
-      <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-4'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-8 gap-4'>
         <StatsCard
           title='Total Staff'
           value={summary?.total_staff ?? 0}
@@ -214,6 +219,27 @@ export default function AdminStaffPage() {
           value={summary?.secretaries ?? 0}
           icon={<Users size={22} />}
           color='yellow'
+        />
+
+        <StatsCard
+          title='Accountants'
+          value={summary?.accountants ?? 0}
+          icon={<Banknote size={22} />}
+          color='green'
+        />
+
+        <StatsCard
+          title='HR'
+          value={summary?.hr ?? 0}
+          icon={<UsersRound size={22} />}
+          color='yellow'
+        />
+
+        <StatsCard
+          title='IT'
+          value={summary?.it ?? 0}
+          icon={<MonitorCog size={22} />}
+          color='blue'
         />
 
         <StatsCard
@@ -279,7 +305,11 @@ export default function AdminStaffPage() {
           <div className='flex flex-wrap gap-2'>
             <Button3D
               size='sm'
-              onClick={() => navigate(`/admin/staff/${member.user_id}`)}
+              onClick={() =>
+                navigate(
+                  `/admin/staff/${member.user_id}?role=${encodeURIComponent(member.role)}`,
+                )
+              }
             >
               View
             </Button3D>

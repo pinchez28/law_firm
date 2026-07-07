@@ -1,9 +1,48 @@
 import axiosInstance from '@/core/api/axios';
 
+const STAFF_ROLE_CONFIG = {
+  LAWYER: {
+    segment: 'lawyers',
+    listKey: 'lawyers',
+    detailKey: 'lawyer',
+    countKey: 'lawyers',
+  },
+  SECRETARY: {
+    segment: 'secretaries',
+    listKey: 'secretaries',
+    detailKey: 'secretary',
+    countKey: 'secretaries',
+  },
+  ACCOUNTANT: {
+    segment: 'accountants',
+    listKey: 'accountants',
+    detailKey: 'accountant',
+    countKey: 'accountants',
+  },
+  HR: {
+    segment: 'hr',
+    listKey: 'hr_staff',
+    detailKey: 'hr',
+    countKey: 'hr',
+  },
+  IT: {
+    segment: 'it',
+    listKey: 'it_staff',
+    detailKey: 'it',
+    countKey: 'it',
+  },
+};
+
+const STAFF_ROLES = Object.keys(STAFF_ROLE_CONFIG);
+
 /* =========================================================
    ADMIN STAFF SERVICE
 ========================================================= */
 const adminStaffService = {
+  roleConfig(role) {
+    return STAFF_ROLE_CONFIG[role] || STAFF_ROLE_CONFIG.LAWYER;
+  },
+
   normalizeStaffMember(member, role) {
     return {
       ...member,
@@ -30,36 +69,46 @@ const adminStaffService = {
      STAFF LIST
   ====================================================== */
   async getStaff() {
-    const [lawyerResponse, secretaryResponse] = await Promise.all([
-      axiosInstance.get('/admin/staff/lawyers/'),
-      axiosInstance.get('/admin/staff/secretaries/'),
-    ]);
+    const responses = await Promise.all(
+      STAFF_ROLES.map(async (role) => {
+        const config = adminStaffService.roleConfig(role);
+        const { data } = await axiosInstance.get(
+          `/admin/staff/${config.segment}/`,
+        );
+        return { role, config, data };
+      }),
+    );
 
-    const lawyers = lawyerResponse.data.lawyers || [];
-    const secretaries = secretaryResponse.data.secretaries || [];
-    const lawyerMetadata = lawyerResponse.data.metadata || {};
-    const secretaryMetadata = secretaryResponse.data.metadata || {};
-    const staff = [
-      ...lawyers.map((lawyer) =>
-        adminStaffService.normalizeStaffMember(lawyer, 'LAWYER'),
+    const staff = responses.flatMap(({ role, config, data }) =>
+      (data[config.listKey] || []).map((member) =>
+        adminStaffService.normalizeStaffMember(member, role),
       ),
-      ...secretaries.map((secretary) =>
-        adminStaffService.normalizeStaffMember(secretary, 'SECRETARY'),
-      ),
-    ];
+    );
+
+    const counts = responses.reduce((acc, { role, config, data }) => {
+      const metadata = data.metadata || {};
+      acc[config.countKey] =
+        metadata.total_records ?? (data[config.listKey] || []).length;
+      acc.active += metadata.summary?.active ?? 0;
+      acc.inactive += metadata.summary?.inactive ?? 0;
+      acc[role] = {
+        active: metadata.summary?.active ?? 0,
+        inactive: metadata.summary?.inactive ?? 0,
+      };
+      return acc;
+    }, { active: 0, inactive: 0 });
 
     return {
       data: {
         summary: {
           total_staff: staff.length,
-          active_staff:
-            (lawyerMetadata.summary?.active ?? 0) +
-            (secretaryMetadata.summary?.active ?? 0),
-          inactive_staff:
-            (lawyerMetadata.summary?.inactive ?? 0) +
-            (secretaryMetadata.summary?.inactive ?? 0),
-          lawyers: lawyerMetadata.total_records ?? lawyers.length,
-          secretaries: secretaryMetadata.total_records ?? secretaries.length,
+          active_staff: counts.active,
+          inactive_staff: counts.inactive,
+          lawyers: counts.lawyers ?? 0,
+          secretaries: counts.secretaries ?? 0,
+          accountants: counts.accountants ?? 0,
+          hr: counts.hr ?? 0,
+          it: counts.it ?? 0,
           total_active_cases: 0,
           total_closed_cases: 0,
         },
@@ -71,21 +120,34 @@ const adminStaffService = {
   /* ======================================================
      STAFF DETAILS
   ====================================================== */
-  async getStaffDetails(userId) {
-    let staffMember;
-    let role;
+  async resolveStaffRole(userId) {
+    const response = await adminStaffService.getStaff();
+    const staff = response.data?.staff || [];
+    const match = staff.find(
+      (member) =>
+        String(member.user_id) === String(userId) ||
+        String(member.id) === String(userId),
+    );
 
-    try {
-      const { data } = await axiosInstance.get(`/admin/staff/lawyers/${userId}/`);
-      staffMember = data.lawyer || {};
-      role = 'LAWYER';
-    } catch (error) {
-      if (error?.response?.status !== 404) throw error;
+    return match?.role || match?.firm_role || null;
+  },
+
+  async getStaffDetails(userId, knownRole = null) {
+    let staffMember;
+    const role = knownRole || (await adminStaffService.resolveStaffRole(userId));
+
+    if (role) {
+      const config = adminStaffService.roleConfig(role);
       const { data } = await axiosInstance.get(
-        `/admin/staff/secretaries/${userId}/`,
+        `/admin/staff/${config.segment}/${userId}/`,
       );
-      staffMember = data.secretary || {};
-      role = 'SECRETARY';
+      staffMember = data[config.detailKey] || {};
+    }
+
+    if (!staffMember || !role) {
+      const notFoundError = new Error('Staff member not found.');
+      notFoundError.response = { status: 404 };
+      throw notFoundError;
     }
 
     const availablePermissions = (staffMember.available_permissions || []).map(
@@ -134,6 +196,10 @@ const adminStaffService = {
         recent_activity: [],
         lawyer: role === 'LAWYER' ? staffMember : null,
         secretary: role === 'SECRETARY' ? staffMember : null,
+        accountant: role === 'ACCOUNTANT' ? staffMember : null,
+        hr: role === 'HR' ? staffMember : null,
+        it: role === 'IT' ? staffMember : null,
+        staff_member: staffMember,
       },
     };
   },
@@ -190,6 +256,77 @@ const adminStaffService = {
         return data;
       }
 
+      if (payload.firm_role === 'ACCOUNTANT') {
+        const accountantPayload = {
+          ...basePayload,
+          job_title: payload.job_title || 'Accountant',
+          accounting_specialization: payload.accounting_specialization || '',
+          professional_license_number:
+            payload.professional_license_number || '',
+          can_manage_invoices: payload.can_manage_invoices ?? true,
+          can_manage_payments: payload.can_manage_payments ?? true,
+          can_manage_expenses: payload.can_manage_expenses ?? false,
+          can_view_financial_reports:
+            payload.can_view_financial_reports ?? true,
+          permission_codes: payload.permission_codes || [],
+          notes: payload.notes || '',
+        };
+
+        const { data } = await axiosInstance.post(
+          '/admin/staff/accountants/create/',
+          accountantPayload,
+        );
+
+        return data;
+      }
+
+      if (payload.firm_role === 'HR') {
+        const hrPayload = {
+          ...basePayload,
+          job_title: payload.job_title || 'Human Resource Officer',
+          hr_specialization: payload.hr_specialization || '',
+          can_manage_staff_records:
+            payload.can_manage_staff_records ?? true,
+          can_manage_recruitment:
+            payload.can_manage_recruitment ?? false,
+          can_manage_leave: payload.can_manage_leave ?? true,
+          can_manage_payroll_records:
+            payload.can_manage_payroll_records ?? false,
+          permission_codes: payload.permission_codes || [],
+          notes: payload.notes || '',
+        };
+
+        const { data } = await axiosInstance.post(
+          '/admin/staff/hr/create/',
+          hrPayload,
+        );
+
+        return data;
+      }
+
+      if (payload.firm_role === 'IT') {
+        const itPayload = {
+          ...basePayload,
+          job_title: payload.job_title || 'IT Support',
+          technical_specialization: payload.technical_specialization || '',
+          certification: payload.certification || '',
+          can_manage_users: payload.can_manage_users ?? false,
+          can_manage_system_settings:
+            payload.can_manage_system_settings ?? false,
+          can_manage_security: payload.can_manage_security ?? false,
+          can_access_audit_logs: payload.can_access_audit_logs ?? true,
+          permission_codes: payload.permission_codes || [],
+          notes: payload.notes || '',
+        };
+
+        const { data } = await axiosInstance.post(
+          '/admin/staff/it/create/',
+          itPayload,
+        );
+
+        return data;
+      }
+
       const lawyerPayload = {
         ...basePayload,
         job_title: payload.job_title || 'Lawyer',
@@ -200,6 +337,7 @@ const adminStaffService = {
         is_notary: Boolean(payload.is_notary),
         can_commission_oaths: Boolean(payload.can_commission_oaths),
         is_court_approved: payload.is_court_approved ?? true,
+        permission_codes: payload.permission_codes || [],
         professional_summary: payload.professional_summary || '',
       };
 
@@ -222,21 +360,17 @@ const adminStaffService = {
      UPDATE PERMISSIONS
   ==================================================== */
   async updateStaffPermissions(userId, payload) {
-    const details = await adminStaffService.getStaffDetails(userId);
-    const role = details.data?.membership?.role;
-    const endpoint =
-      role === 'SECRETARY'
-        ? `/admin/staff/secretaries/${userId}/permissions/`
-        : `/admin/staff/lawyers/${userId}/update/`;
-    const body =
-      role === 'SECRETARY'
-        ? { permission_codes: payload.permissions || [] }
-        : payload;
+    const role =
+      payload.role ||
+      (await adminStaffService.resolveStaffRole(userId));
+    if (!role) {
+      throw new Error('Staff member not found.');
+    }
+    const config = adminStaffService.roleConfig(role);
+    const endpoint = `/admin/staff/${config.segment}/${userId}/permissions/`;
+    const body = { permission_codes: payload.permissions || [] };
 
-    const { data } = await axiosInstance[role === 'SECRETARY' ? 'post' : 'patch'](
-      endpoint,
-      body,
-    );
+    const { data } = await axiosInstance.post(endpoint, body);
 
     return data;
   },
@@ -253,7 +387,12 @@ const adminStaffService = {
       const details = await adminStaffService.getStaffDetails(userId);
       const resolvedRole = details.data?.membership?.role;
       const resolvedIsActive =
-        details.data?.lawyer?.is_active ?? details.data?.secretary?.is_active;
+        details.data?.staff_member?.is_active ??
+        details.data?.lawyer?.is_active ??
+        details.data?.secretary?.is_active ??
+        details.data?.accountant?.is_active ??
+        details.data?.hr?.is_active ??
+        details.data?.it?.is_active;
       return adminStaffService.toggleStaffStatus({
         user_id: userId,
         role: resolvedRole,
@@ -262,7 +401,7 @@ const adminStaffService = {
     }
 
     const action = isActive ? 'deactivate' : 'activate';
-    const segment = role === 'SECRETARY' ? 'secretaries' : 'lawyers';
+    const segment = adminStaffService.roleConfig(role).segment;
     const { data } = await axiosInstance.post(
       `/admin/staff/${segment}/${userId}/${action}/`,
     );
@@ -286,7 +425,7 @@ const adminStaffService = {
       });
     }
 
-    const segment = role === 'SECRETARY' ? 'secretaries' : 'lawyers';
+    const segment = adminStaffService.roleConfig(role).segment;
     const { data } = await axiosInstance.delete(
       `/admin/staff/${segment}/${userId}/delete/`,
     );

@@ -340,81 +340,39 @@ html:not(.dark) .public-home #home [class*="via-black"] {
 
 @media (min-width: 1024px) {
   .auth-layout {
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
+    overflow-x: hidden;
   }
 
   .auth-layout .auth-main {
-    height: 100vh;
     min-height: 100vh;
-    overflow: hidden;
+    height: auto !important;
+    overflow: visible;
     padding: 0 !important;
     align-items: stretch !important;
   }
 
   .auth-layout .auth-main > div {
     width: 100%;
-    height: 100vh;
     min-height: 100vh;
+    height: auto !important;
+    align-items: stretch !important;
   }
 
   .auth-layout .auth-main > div > div:first-child {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    min-height: 100vh;
+    min-height: inherit;
+    height: auto !important;
     align-self: stretch;
   }
 
   .auth-layout .auth-main > div > div:last-child {
-    height: 100vh;
-    min-height: 100vh;
-    overflow-y: auto;
+    min-height: inherit;
+    height: auto !important;
+    overflow-y: visible;
     align-items: flex-start !important;
     justify-content: center !important;
     padding-top: 7.5rem !important;
-    padding-bottom: 7.5rem !important;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(18, 56, 90, 0.35) transparent;
-  }
-
-  .dark .auth-layout .auth-main > div > div:last-child {
-    scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
-  }
-
-  .auth-layout .auth-footer {
-    position: fixed;
-    right: 0;
-    bottom: 0;
-    z-index: 45;
-    width: 50%;
-    border-top: 1px solid var(--border);
-    box-shadow: 0 -10px 28px rgba(31, 41, 51, 0.12);
-  }
-
-  .auth-layout .auth-footer footer {
-    margin: 0;
-    background: var(--surface-raised) !important;
-    color: var(--text-muted) !important;
-  }
-
-  .dark .auth-layout .auth-footer footer {
-    background: #111b2e !important;
-    color: #94a3b8 !important;
-  }
-
-  .auth-layout .auth-footer footer > div:first-child {
-    display: none;
-  }
-
-  .auth-layout .auth-footer footer > div:last-child {
-    border-top: 0 !important;
-    padding: 0.75rem 1rem !important;
-    color: var(--text-muted) !important;
-  }
-
-  .dark .auth-layout .auth-footer footer > div:last-child {
-    color: #94a3b8 !important;
+    padding-bottom: 4rem !important;
   }
 }
 

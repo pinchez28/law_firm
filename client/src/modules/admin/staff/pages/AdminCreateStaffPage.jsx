@@ -12,6 +12,99 @@ import FloatingInput from '@/components/ui/FloatingInput';
 import adminFirmService from '@/modules/admin/firm/services/adminFirmService';
 import { useAdminStaff } from '@/modules/admin/staff/hooks/useAdminStaff';
 
+const STAFF_ROLE_OPTIONS = [
+  { value: 'LAWYER', label: 'Lawyer', defaultJobTitle: 'Lawyer' },
+  { value: 'SECRETARY', label: 'Secretary', defaultJobTitle: 'Secretary' },
+  { value: 'ACCOUNTANT', label: 'Accountant', defaultJobTitle: 'Accountant' },
+  { value: 'HR', label: 'Human Resource', defaultJobTitle: 'Human Resource Officer' },
+  { value: 'IT', label: 'IT Support', defaultJobTitle: 'IT Support' },
+];
+
+const ROLE_PERMISSION_OPTIONS = {
+  LAWYER: [
+    ['MANAGE_ASSIGNED_CASES', 'Manage Assigned Cases'],
+    ['CREATE_CASES', 'Create Cases'],
+    ['MANAGE_CASE_DOCUMENTS', 'Manage Case Documents'],
+    ['SCHEDULE_HEARINGS', 'Schedule Hearings'],
+    ['MANAGE_CLIENT_COMMUNICATIONS', 'Manage Client Communications'],
+    ['USE_LEGAL_RESEARCH', 'Use Legal Research'],
+    ['USE_AI_TOOLS', 'Use AI Tools'],
+    ['APPROVE_DOCUMENTS', 'Approve Documents'],
+    ['VIEW_BILLING', 'View Billing'],
+  ],
+  SECRETARY: [
+    ['MANAGE_CASES', 'Manage Cases'],
+    ['MANAGE_TASKS', 'Manage Tasks'],
+    ['MANAGE_CLIENTS', 'Manage Clients'],
+    ['MANAGE_DOCUMENTS', 'Manage Documents'],
+    ['MANAGE_CALENDAR', 'Manage Calendar'],
+    ['SEND_COMMUNICATIONS', 'Send Communications'],
+    ['VIEW_REPORTS', 'View Reports'],
+    ['MANAGE_BILLING', 'Manage Billing'],
+  ],
+  ACCOUNTANT: [
+    ['MANAGE_INVOICES', 'Manage Invoices'],
+    ['MANAGE_PAYMENTS', 'Manage Payments'],
+    ['MANAGE_EXPENSES', 'Manage Expenses'],
+    ['VIEW_FINANCIAL_REPORTS', 'View Financial Reports'],
+    ['MANAGE_CLIENT_BILLING', 'Manage Client Billing'],
+    ['MANAGE_PAYROLL', 'Manage Payroll'],
+    ['MANAGE_TAX_RECORDS', 'Manage Tax Records'],
+  ],
+  HR: [
+    ['MANAGE_STAFF_RECORDS', 'Manage Staff Records'],
+    ['MANAGE_RECRUITMENT', 'Manage Recruitment'],
+    ['MANAGE_LEAVE', 'Manage Leave'],
+    ['MANAGE_PAYROLL_RECORDS', 'Manage Payroll Records'],
+    ['MANAGE_PERFORMANCE', 'Manage Performance'],
+    ['VIEW_HR_REPORTS', 'View HR Reports'],
+  ],
+  IT: [
+    ['MANAGE_USERS', 'Manage Users'],
+    ['MANAGE_SYSTEM_SETTINGS', 'Manage System Settings'],
+    ['MANAGE_SECURITY', 'Manage Security'],
+    ['VIEW_AUDIT_LOGS', 'View Audit Logs'],
+    ['MANAGE_BACKUPS', 'Manage Backups'],
+    ['MANAGE_INTEGRATIONS', 'Manage Integrations'],
+  ],
+};
+
+const ROLE_DEFAULT_WORK_OPTIONS = {
+  LAWYER: [
+    ['is_court_approved', 'Court Approved'],
+    ['can_commission_oaths', 'Commission Oaths'],
+    ['is_notary', 'Notary'],
+  ],
+  SECRETARY: [
+    ['can_prepare_documents', 'Prepare Documents'],
+    ['can_schedule_appointments', 'Schedule Appointments'],
+    ['can_manage_client_intake', 'Manage Client Intake'],
+    ['can_receive_documents', 'Receive Documents'],
+  ],
+  ACCOUNTANT: [
+    ['can_manage_invoices', 'Manage Invoices'],
+    ['can_manage_payments', 'Manage Payments'],
+    ['can_manage_expenses', 'Manage Expenses'],
+    ['can_view_financial_reports', 'View Financial Reports'],
+  ],
+  HR: [
+    ['can_manage_staff_records', 'Manage Staff Records'],
+    ['can_manage_recruitment', 'Manage Recruitment'],
+    ['can_manage_leave', 'Manage Leave'],
+    ['can_manage_payroll_records', 'Manage Payroll Records'],
+  ],
+  IT: [
+    ['can_manage_users', 'Manage Users'],
+    ['can_manage_system_settings', 'Manage System Settings'],
+    ['can_manage_security', 'Manage Security'],
+    ['can_access_audit_logs', 'Access Audit Logs'],
+  ],
+};
+
+const getDefaultJobTitle = (role) =>
+  STAFF_ROLE_OPTIONS.find((option) => option.value === role)?.defaultJobTitle ||
+  'Staff';
+
 export default function AdminCreateStaffPage() {
   const navigate = useNavigate();
 
@@ -46,6 +139,23 @@ export default function AdminCreateStaffPage() {
     can_schedule_appointments: true,
     can_manage_client_intake: true,
     can_receive_documents: true,
+    accounting_specialization: '',
+    professional_license_number: '',
+    can_manage_invoices: true,
+    can_manage_payments: true,
+    can_manage_expenses: false,
+    can_view_financial_reports: true,
+    hr_specialization: '',
+    can_manage_staff_records: true,
+    can_manage_recruitment: false,
+    can_manage_leave: true,
+    can_manage_payroll_records: false,
+    technical_specialization: '',
+    certification: '',
+    can_manage_users: false,
+    can_manage_system_settings: false,
+    can_manage_security: false,
+    can_access_audit_logs: true,
     permission_codes: [],
     notes: '',
   });
@@ -67,6 +177,20 @@ export default function AdminCreateStaffPage() {
         : [...prev.permission_codes, permission],
     }));
   };
+
+  const handleRoleChange = (role) => {
+    setFormData((prev) => ({
+      ...prev,
+      firm_role: role,
+      job_title: getDefaultJobTitle(role),
+      permission_codes: [],
+    }));
+  };
+
+  const roleDefaultWorkOptions =
+    ROLE_DEFAULT_WORK_OPTIONS[formData.firm_role] || [];
+  const rolePermissionOptions =
+    ROLE_PERMISSION_OPTIONS[formData.firm_role] || [];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -123,7 +247,7 @@ export default function AdminCreateStaffPage() {
     <div className='space-y-6 p-4 md:p-6 animate-fadeIn'>
       <SectionHeading
         title='Create Staff Member'
-        subtitle='Add a lawyer or secretary to your firm'
+        subtitle='Add lawyers, secretaries, accountants, HR, and IT staff to your firm'
       />
 
       <Card className='p-6'>
@@ -166,14 +290,7 @@ export default function AdminCreateStaffPage() {
 
             <select
               value={formData.firm_role}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  firm_role: e.target.value,
-                  job_title:
-                    e.target.value === 'SECRETARY' ? 'Secretary' : 'Lawyer',
-                })
-              }
+              onChange={(e) => handleRoleChange(e.target.value)}
               className='
     w-full
     px-4 py-3
@@ -193,8 +310,11 @@ export default function AdminCreateStaffPage() {
     focus:ring-brand-primary
   '
             >
-              <option value='LAWYER'>Lawyer</option>
-              <option value='SECRETARY'>Secretary</option>
+              {STAFF_ROLE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -289,19 +409,61 @@ export default function AdminCreateStaffPage() {
               value={formData.office_location}
               onChange={handleChange}
             />
+
+            {formData.firm_role === 'ACCOUNTANT' && (
+              <>
+                <FloatingInput
+                  label='Accounting Specialization'
+                  name='accounting_specialization'
+                  value={formData.accounting_specialization}
+                  onChange={handleChange}
+                />
+
+                <FloatingInput
+                  label='Professional License Number'
+                  name='professional_license_number'
+                  value={formData.professional_license_number}
+                  onChange={handleChange}
+                />
+              </>
+            )}
+
+            {formData.firm_role === 'HR' && (
+              <FloatingInput
+                label='HR Specialization'
+                name='hr_specialization'
+                value={formData.hr_specialization}
+                onChange={handleChange}
+              />
+            )}
+
+            {formData.firm_role === 'IT' && (
+              <>
+                <FloatingInput
+                  label='Technical Specialization'
+                  name='technical_specialization'
+                  value={formData.technical_specialization}
+                  onChange={handleChange}
+                />
+
+                <FloatingInput
+                  label='Certification'
+                  name='certification'
+                  value={formData.certification}
+                  onChange={handleChange}
+                />
+              </>
+            )}
           </div>
 
-          {formData.firm_role === 'SECRETARY' && (
+          {roleDefaultWorkOptions.length > 0 && (
             <div className='space-y-4 rounded-xl border border-border-light dark:border-border-dark p-4'>
-              <h3 className='font-semibold'>Secretary Default Work</h3>
+              <h3 className='font-semibold'>
+                {getDefaultJobTitle(formData.firm_role)} Default Work
+              </h3>
 
               <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-                {[
-                  ['can_prepare_documents', 'Prepare Documents'],
-                  ['can_schedule_appointments', 'Schedule Appointments'],
-                  ['can_manage_client_intake', 'Manage Client Intake'],
-                  ['can_receive_documents', 'Receive Documents'],
-                ].map(([name, label]) => (
+                {roleDefaultWorkOptions.map(([name, label]) => (
                   <label key={name} className='flex items-center gap-2'>
                     <input
                       type='checkbox'
@@ -318,19 +480,12 @@ export default function AdminCreateStaffPage() {
                 ))}
               </div>
 
-              <h3 className='font-semibold pt-2'>Extra Admin Permissions</h3>
+              <h3 className='font-semibold pt-2'>
+                Extra Admin Permissions
+              </h3>
 
               <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-                {[
-                  ['MANAGE_CASES', 'Manage Cases'],
-                  ['MANAGE_TASKS', 'Manage Tasks'],
-                  ['MANAGE_CLIENTS', 'Manage Clients'],
-                  ['MANAGE_DOCUMENTS', 'Manage Documents'],
-                  ['MANAGE_CALENDAR', 'Manage Calendar'],
-                  ['SEND_COMMUNICATIONS', 'Send Communications'],
-                  ['VIEW_REPORTS', 'View Reports'],
-                  ['MANAGE_BILLING', 'Manage Billing'],
-                ].map(([code, label]) => (
+                {rolePermissionOptions.map(([code, label]) => (
                   <label key={code} className='flex items-center gap-2'>
                     <input
                       type='checkbox'
@@ -342,12 +497,14 @@ export default function AdminCreateStaffPage() {
                 ))}
               </div>
 
-              <FloatingInput
-                label='Notes'
-                name='notes'
-                value={formData.notes}
-                onChange={handleChange}
-              />
+              {formData.firm_role !== 'LAWYER' && (
+                <FloatingInput
+                  label='Notes'
+                  name='notes'
+                  value={formData.notes}
+                  onChange={handleChange}
+                />
+              )}
             </div>
           )}
 

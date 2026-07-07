@@ -1,5 +1,4 @@
 import PublicNavbar from "@/layouts/public/PublicNavbar";
-import Footer from "@/components/shared/Footer";
 import { Outlet } from "react-router-dom";
 
 export default function AuthLayout() {
@@ -12,11 +11,6 @@ export default function AuthLayout() {
       <main className="auth-main flex-1 flex items-center justify-center px-4 py-10">
         <Outlet />
       </main>
-
-      {/* Footer */}
-      <div className="auth-footer">
-        <Footer />
-      </div>
     </div>
   );
 }

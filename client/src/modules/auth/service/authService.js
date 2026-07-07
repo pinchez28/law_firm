@@ -31,18 +31,22 @@ const authService = {
   },
 
   async changeStaffPassword(firmRole, payload) {
-    const endpoint =
-      firmRole === 'SECRETARY'
-        ? '/staff/secretary/change-password/'
-        : '/staff/lawyer/change-password/';
+    const endpoints = {
+      LAWYER: '/staff/lawyer/change-password/',
+      SECRETARY: '/staff/secretary/change-password/',
+      ACCOUNTANT: '/staff/accountant/change-password/',
+      HR: '/staff/hr/change-password/',
+      IT: '/staff/it/change-password/',
+    };
+    const endpoint = endpoints[firmRole] || '/staff/lawyer/change-password/';
     const body =
-      firmRole === 'SECRETARY'
-        ? {
+      firmRole === 'LAWYER'
+        ? payload
+        : {
             old_password: payload.current_password,
             new_password: payload.new_password,
             confirm_password: payload.confirm_password,
-          }
-        : payload;
+          };
 
     const { data } = await axiosInstance.post(endpoint, body);
     return data;
