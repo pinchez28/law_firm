@@ -46,6 +46,11 @@ class ClientContact(TimestampedModel):
         help_text="e.g. Director, Advocate, Executor, CEO",
     )
 
+    national_id_number = models.CharField(
+        max_length=50,
+        blank=True,
+    )
+
     email = models.EmailField(
         blank=True,
     )

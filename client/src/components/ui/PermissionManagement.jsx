@@ -1,5 +1,5 @@
 import React from 'react';
-import Swal from 'sweetalert2';
+import Swal from '@/core/utils/themedSwal';
 
 const PERMISSION_DESCRIPTIONS = {
   manage_cases:

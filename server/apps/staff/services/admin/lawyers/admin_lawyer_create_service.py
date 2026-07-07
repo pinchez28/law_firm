@@ -33,15 +33,14 @@ class AdminLawyerCreateService:
             role=UserRole.STAFF,
         )
 
-        staff_number = validated_data.get("staff_number")
+        staff_number = validated_data.pop("staff_number", None)
         if not staff_number:
             staff_number = AdminLawyerNumberService.generate_staff_number(law_firm)
-
-            print(validated_data)
 
         lawyer = Lawyer.objects.create(
             user=user,
             law_firm=law_firm,
+            staff_number=staff_number,
             firm_role=FirmRole.LAWYER,
             employment_status=EmploymentStatus.ACTIVE,
             is_active=True,

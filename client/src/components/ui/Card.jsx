@@ -4,6 +4,8 @@ export default function Card({ children, className = '' }) {
       className={`
         bg-surface-light
         dark:bg-surface-dark
+        text-text-primary-light
+        dark:text-text-primary-dark
 
         border
         border-border-light

@@ -58,6 +58,8 @@ const links = [
 export default function ClientSidebar({ onClose }) {
   const { theme } = useContext(ThemeContext);
   const { user } = useContext(AuthContext);
+  const displayName = user?.full_name || user?.profile?.full_name || user?.email || 'User';
+  const systemRole = user?.role || 'User';
 
   const isDark = theme === 'dark';
 
@@ -111,8 +113,8 @@ export default function ClientSidebar({ onClose }) {
           </div>
 
           <div className='text-sm leading-tight'>
-            <p className='font-medium'>{user?.profile?.full_name || 'Admin'}</p>
-            <p className='text-xs text-white/70'>{user?.role || 'User'}</p>
+            <p className='font-medium'>{displayName}</p>
+            <p className='text-xs text-white/70'>{systemRole}</p>
           </div>
         </div>
 

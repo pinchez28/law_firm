@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import DashboardHero from '@/components/dashboard/DashboardHero';
 import DashboardGrid from '@/components/dashboard/DashboardGrid';
 import DashboardTile from '@/components/dashboard/DashboardTile';
+import useSecretaryDashboard from '@/modules/staff/secretary/dashboard/hooks/useSecretaryDashboard';
 
 const secretaryTiles = [
   {
@@ -21,12 +22,12 @@ const secretaryTiles = [
     path: '/secretary/notifications',
   },
   {
-    title: 'Hearings',
-    subtitle: 'Manage schedules and court appearances',
+    title: 'Calendar',
+    subtitle: 'Manage schedules and appointments',
     icon: CalendarDays,
     variant: 'hearings',
     size: 'wide',
-    path: '/secretary/hearings',
+    path: '/secretary/calendar',
   },
   {
     title: 'Tasks',
@@ -42,7 +43,7 @@ const secretaryTiles = [
     icon: Activity,
     variant: 'staff',
     size: 'wide',
-    path: '/secretary/workload',
+    path: '/secretary/profile',
   },
   {
     title: 'Documents',
@@ -58,21 +59,24 @@ const secretaryTiles = [
     icon: Activity,
     variant: 'activities',
     size: 'wide',
-    path: '/secretary/activities',
+    path: '/secretary/clients',
   },
 ];
 
 export default function SecretaryDashboard() {
   const navigate = useNavigate();
+  const { data } = useSecretaryDashboard();
+  const profile = data?.profile || {};
+  const summary = data?.summary || {};
 
   return (
     <>
       <DashboardHero
         badge='Secretary'
-        title='Welcome back 👋'
+        title={`Welcome back${profile.full_name ? `, ${profile.full_name}` : ''}`}
         description='Manage client communications, schedules, documents, and daily administrative operations.'
         statusTitle='Operations Running Smoothly'
-        statusDescription='All assigned tasks and schedules are up to date.'
+        statusDescription={`${summary.pending_tasks ?? 0} pending tasks, ${summary.appointments_today ?? 0} appointments today.`}
       />
 
       <section className='-mt-2'>

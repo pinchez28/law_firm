@@ -1,23 +1,19 @@
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
 
 from apps.firm.services.firm_settings_service import FirmSettingService
 from apps.firm.serializers.firm_settings_serializer import FirmSettingSerializer
+from apps.firm.views.admin.admin_firm_base_view import AdminFirmBaseView
 
 
-class AdminFirmSettingsView(APIView):
-    permission_classes = [IsAuthenticated]
-
+class AdminFirmSettingsView(AdminFirmBaseView):
     def get(self, request):
-        firm = request.user.owned_firm
+        firm = self.get_firm()
         settings = FirmSettingService.get_settings(firm)
         serializer = FirmSettingSerializer(settings)
         return Response(serializer.data)
 
     def patch(self, request):
-        firm = request.user.owned_firm
+        firm = self.get_firm()
         settings = FirmSettingService.get_settings(firm)
 
         serializer = FirmSettingSerializer(

@@ -14,10 +14,16 @@ from apps.staff.views.admin.lawyers.admin_lawyer_base_view import (
 
 class AdminLawyerDetailView(AdminLawyerBaseView):
     def get(self, request, lawyer_id):
-        lawyer = AdminLawyerQueryService.get_lawyer(
-            lawyer_id=lawyer_id,
-            law_firm=self.get_law_firm(),
-        )
+        try:
+            lawyer = AdminLawyerQueryService.get_lawyer(
+                lawyer_id=lawyer_id,
+                law_firm=self.get_law_firm(),
+            )
+        except Exception:
+            return Response(
+                {"detail": "Lawyer not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         serializer = AdminLawyerDetailSerializer(lawyer)
 

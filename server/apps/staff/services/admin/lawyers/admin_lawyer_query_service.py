@@ -29,6 +29,8 @@ class AdminLawyerQueryService:
             queryset = queryset.filter(employment_status=employment_status)
 
         if is_active is not None:
+            if isinstance(is_active, str):
+                is_active = is_active.lower() in ["1", "true", "yes"]
             queryset = queryset.filter(is_active=is_active)
 
         if search:

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import Swal from 'sweetalert2';
+import Swal from '@/core/utils/themedSwal';
 
 import {
   Users,
@@ -64,7 +64,7 @@ export default function AdminStaffPage() {
     if (!result.isConfirmed) return;
 
     try {
-      await toggleStaffStatus(member.user_id);
+      await toggleStaffStatus(member);
 
       Swal.fire({
         icon: 'success',
@@ -98,7 +98,7 @@ export default function AdminStaffPage() {
     if (!result.isConfirmed) return;
 
     try {
-      await deleteStaff(member.user_id);
+      await deleteStaff(member);
 
       Swal.fire({
         icon: 'success',

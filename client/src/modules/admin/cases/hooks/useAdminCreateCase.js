@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import adminCasesService from '@/modules/admin/cases/services/adminCasesService';
-import Swal from 'sweetalert2';
+import Swal from '@/core/utils/themedSwal';
 
 export default function useCreateCase() {
   const [loading, setLoading] = useState(false);

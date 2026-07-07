@@ -10,5 +10,6 @@ class LawyerPasswordService:
             raise ValueError("Current password is incorrect.")
 
         user.set_password(new_password)
-        user.save(update_fields=["password"])
+        user.must_change_password = False
+        user.save(update_fields=["password", "must_change_password"])
         return user

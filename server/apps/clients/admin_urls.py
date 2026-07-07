@@ -1,17 +1,33 @@
 from django.urls import path
 
-from .views.client_admin_assign_view import ClientAdminAssignView
-from .views.client_admin_dashboard_view import ClientAdminDashboardView
-from .views.client_admin_delete_view import ClientAdminDeleteView
-from .views.client_admin_detail_view import ClientAdminDetailView
-from .views.client_admin_lawyers_view import ClientAdminLawyersView
-from .views.client_admin_list_view import ClientAdminListView
-from .views.client_admin_remove_lawyer_view import ClientAdminRemoveLawyerView
-from .views.client_admin_statistics_view import ClientAdminStatisticsView
-from .views.client_admin_status_view import ClientAdminStatusView
+from apps.clients.views.admin import (
+    ClientAdminAssignView,
+    ClientAdminDashboardView,
+    ClientAdminDeleteView,
+    ClientAdminDetailView,
+    ClientAdminLawyersView,
+    ClientAdminListView,
+    ClientAdminRemoveLawyerView,
+    ClientAdminStatisticsView,
+    ClientAdminStatusView,
+    CompanyAdminCreateClientView,
+    EstateAdminCreateClientView,
+    GovernmentAdminCreateClientView,
+    IndividualAdminCreateClientView,
+    NGOAdminCreateClientView,
+    PartnershipAdminCreateClientView,
+    TrustAdminCreateClientView,
+)
 
 urlpatterns = [
     path("", ClientAdminListView.as_view(), name="admin-client-list"),
+    path("individuals/create/", IndividualAdminCreateClientView.as_view(), name="admin-individual-client-create"),
+    path("companies/create/", CompanyAdminCreateClientView.as_view(), name="admin-company-client-create"),
+    path("partnerships/create/", PartnershipAdminCreateClientView.as_view(), name="admin-partnership-client-create"),
+    path("ngos/create/", NGOAdminCreateClientView.as_view(), name="admin-ngo-client-create"),
+    path("trusts/create/", TrustAdminCreateClientView.as_view(), name="admin-trust-client-create"),
+    path("estates/create/", EstateAdminCreateClientView.as_view(), name="admin-estate-client-create"),
+    path("government/create/", GovernmentAdminCreateClientView.as_view(), name="admin-government-client-create"),
     path("dashboard/", ClientAdminDashboardView.as_view(), name="admin-client-dashboard"),
     path("statistics/", ClientAdminStatisticsView.as_view(), name="admin-client-statistics"),
     path("<uuid:client_id>/", ClientAdminDetailView.as_view(), name="admin-client-detail"),

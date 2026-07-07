@@ -1,8 +1,23 @@
 import { useState, useRef, useEffect } from 'react';
+import Button3D from '@/components/ui/Button3D';
+
+const sectionPrompts = {
+  home: 'Have any legal or firm-related question?',
+  about: 'Want to learn more about our firm?',
+  services: 'Need help choosing the right legal service?',
+  'how-it-works': 'Want to understand how our process works?',
+  features: 'Curious how our legal platform supports you?',
+  cta: 'Ready to take the next step with us?',
+  testimonials: 'Want to hear more from our clients?',
+  contact: 'Need help reaching the right legal team?',
+};
+
+const sectionIds = Object.keys(sectionPrompts);
 
 export default function FloatingAIChat() {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState('');
+  const [activeSection, setActiveSection] = useState('home');
   const chatRef = useRef(null);
 
   // Close on outside click
@@ -16,6 +31,36 @@ export default function FloatingAIChat() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const updateActiveSection = () => {
+      let currentSection = 'home';
+
+      sectionIds.forEach((sectionId) => {
+        const section = document.getElementById(sectionId);
+        if (!section) return;
+
+        const rect = section.getBoundingClientRect();
+
+        if (rect.top <= window.innerHeight * 0.45 && rect.bottom >= 160) {
+          currentSection = sectionId;
+        }
+      });
+
+      setActiveSection(currentSection);
+    };
+
+    updateActiveSection();
+    window.addEventListener('scroll', updateActiveSection, { passive: true });
+    window.addEventListener('resize', updateActiveSection);
+
+    return () => {
+      window.removeEventListener('scroll', updateActiveSection);
+      window.removeEventListener('resize', updateActiveSection);
+    };
+  }, []);
+
+  const promptText = sectionPrompts[activeSection] || sectionPrompts.home;
 
   return (
     <div
@@ -45,7 +90,7 @@ export default function FloatingAIChat() {
               Legal Assistant
             </p>
             <p className='text-xs text-text-muted-light dark:text-text-muted-dark'>
-              Ask any legal or firm-related question
+              {promptText}
             </p>
           </div>
 
@@ -94,24 +139,32 @@ export default function FloatingAIChat() {
       )}
 
       {/* Floating Button (Dark mode optimized) */}
-      <button
+      <Button3D
+        type='button'
+        variant='aiGlow'
+        size='md'
         onClick={() => setOpen(!open)}
         className='
-          px-6
-          h-12
-          rounded-md
-          bg-white
-          dark:bg-emerald-500
-          text-gray-900
+          floating-ai-trigger
+          relative
+          overflow-hidden
+          max-w-[calc(100vw-3rem)]
           font-extrabold
-          shadow-strong
-          hover:scale-105
-          transition
-          flex items-center justify-center
+          hover:scale-[1.04]
+          transition-all
+          before:absolute
+          before:inset-0
+          before:bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.58),transparent)]
+          before:-translate-x-full
+          hover:before:translate-x-full
+          before:transition-transform
+          before:duration-700
         '
       >
-        {open ? '✕' : 'Have any Firm related or Legal Question?'}
-      </button>
+        <span className='relative z-10 whitespace-nowrap'>
+          {open ? '✕' : promptText}
+        </span>
+      </Button3D>
     </div>
   );
 }

@@ -2,6 +2,21 @@ from django.db import models
 
 
 class PartnershipClient(models.Model):
+    class AgreementType(models.TextChoices):
+        GENERAL_PARTNERSHIP = "GENERAL_PARTNERSHIP", "General Partnership Agreement"
+        LIMITED_PARTNERSHIP = "LIMITED_PARTNERSHIP", "Limited Partnership Agreement"
+        LIMITED_LIABILITY_PARTNERSHIP = (
+            "LIMITED_LIABILITY_PARTNERSHIP",
+            "Limited Liability Partnership Agreement",
+        )
+        JOINT_VENTURE = "JOINT_VENTURE", "Joint Venture Agreement"
+        SILENT_PARTNERSHIP = "SILENT_PARTNERSHIP", "Silent Partnership Agreement"
+        STRATEGIC_ALLIANCE = "STRATEGIC_ALLIANCE", "Strategic Alliance Agreement"
+        PROFIT_SHARING = "PROFIT_SHARING", "Profit Sharing Agreement"
+        MEMORANDUM_OF_UNDERSTANDING = (
+            "MEMORANDUM_OF_UNDERSTANDING",
+            "Memorandum of Understanding",
+        )
 
     client = models.OneToOneField(
         "clients.Client",
@@ -44,6 +59,7 @@ class PartnershipClient(models.Model):
 
     agreement_type = models.CharField(
         max_length=100,
+        choices=AgreementType.choices,
         null=True,
         blank=True
     )

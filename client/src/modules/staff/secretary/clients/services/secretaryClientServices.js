@@ -2,7 +2,7 @@ import axiosInstance from '@/core/api/axios';
 
 const secretaryClientsService = {
   async getClients(params = {}) {
-    const { data } = await axiosInstance.get('/auth/secretary/clients/', {
+    const { data } = await axiosInstance.get('/staff/secretary/clients/', {
       params,
     });
 
@@ -10,11 +10,8 @@ const secretaryClientsService = {
   },
 
   async getClientById(clientId) {
-    const { data } = await axiosInstance.get(
-      `/auth/secretary/clients/${clientId}/`,
-    );
-
-    return data;
+    const { clients } = await this.getClients();
+    return clients.find((client) => String(client.id) === String(clientId));
   },
 };
 

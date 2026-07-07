@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axiosInstance from '@/core/api/axios';
+import secretaryClientsService from '@/modules/staff/secretary/clients/services/secretaryClientServices';
 
 export function useSecretaryClients() {
   const [clients, setClients] = useState([]);
@@ -8,9 +8,9 @@ export function useSecretaryClients() {
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const res = await axiosInstance.get('/auth/secretary/clients/');
+        const res = await secretaryClientsService.getClients();
 
-        setClients(res.data || []);
+        setClients(res.clients || []);
       } catch {
         setClients([]);
       } finally {

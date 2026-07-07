@@ -30,6 +30,29 @@ const authService = {
     return data;
   },
 
+  async changeStaffPassword(firmRole, payload) {
+    const endpoint =
+      firmRole === 'SECRETARY'
+        ? '/staff/secretary/change-password/'
+        : '/staff/lawyer/change-password/';
+    const body =
+      firmRole === 'SECRETARY'
+        ? {
+            old_password: payload.current_password,
+            new_password: payload.new_password,
+            confirm_password: payload.confirm_password,
+          }
+        : payload;
+
+    const { data } = await axiosInstance.post(endpoint, body);
+    return data;
+  },
+
+  async changePassword(payload) {
+    const { data } = await axiosInstance.post('/auth/change-password/', payload);
+    return data;
+  },
+
   // =====================
   // TOKEN
   // =====================

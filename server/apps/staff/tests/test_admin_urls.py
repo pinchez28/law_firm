@@ -16,7 +16,7 @@ from apps.users.models import User
 
 class AdminLawyerUrlTests(SimpleTestCase):
     def test_admin_lawyers_detail_route_is_available(self):
-        resolver = resolve("/api/admin/lawyers/123e4567-e89b-12d3-a456-426614174000/")
+        resolver = resolve("/api/admin/staff/lawyers/123e4567-e89b-12d3-a456-426614174000/")
 
         self.assertEqual(resolver.view_name, "admin-lawyer-detail")
 

@@ -17,7 +17,7 @@ const useSecretaryCases = (params = {}) => {
         const response = await secretaryCasesService.getMyCases(params);
 
         if (isMounted) {
-          setCases(response.data);
+          setCases(response.cases || []);
         }
       } catch (err) {
         if (isMounted) {

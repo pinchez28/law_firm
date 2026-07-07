@@ -2,32 +2,154 @@ import { useState } from 'react';
 
 import { saveAuthSession } from '@/core/utils/authStorage';
 import { useNavigate, Link } from 'react-router-dom';
+import { flushSync } from 'react-dom';
 import { motion } from 'framer-motion';
 import { ShieldCheck, Lock, ArrowLeft } from 'lucide-react';
 
-import useAuth from '@/modules/auth/hook/useAuth';
+import authService from '@/modules/auth/service/authService';
 import AuthContext from '@/core/store/AuthContext';
 import { useContext } from 'react';
 
 import Card from '@/components/ui/Card';
 import Button3D from '@/components/ui/Button3D';
 import FloatingInput from '@/components/ui/FloatingInput';
+import Swal from '@/core/utils/themedSwal';
+import { getApiErrorMessage } from '@/core/utils/errorMessages';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [openingDashboard, setOpeningDashboard] = useState(false);
+  const [error, setError] = useState(null);
 
-  const { login, loading, error } = useAuth();
   const { login: authLogin } = useContext(AuthContext);
 
   const navigate = useNavigate();
 
+  const navigateByRole = (sessionUser) => {
+    const role = sessionUser.role;
+    const sessionFirmRole = sessionUser.firm_role;
+
+    if (role === 'ADMIN') return navigate('/admin/dashboard', { replace: true });
+
+    if (role === 'OFFICIAL_CLIENT') return navigate('/client/dashboard', { replace: true });
+
+    if (role === 'PORTAL_CLIENT') return navigate('/portal/dashboard', { replace: true });
+
+    if (role === 'STAFF') {
+      if (sessionFirmRole === 'LAWYER') return navigate('/lawyer/dashboard', { replace: true });
+      if (sessionFirmRole === 'SECRETARY') return navigate('/secretary/dashboard', { replace: true });
+      return navigate('/', { replace: true });
+    }
+
+    return navigate('/', { replace: true });
+  };
+
+  const promptPasswordChoice = async ({ sessionUser, access, refresh }) => {
+    const canPrompt =
+      ['STAFF', 'PORTAL_CLIENT'].includes(sessionUser.role) &&
+      sessionUser.must_change_password;
+
+    if (!canPrompt) {
+      return sessionUser;
+    }
+
+    const result = await Swal.fire({
+      icon: 'info',
+      title: 'Change temporary password?',
+      text: 'You are signed in with a temporary password. You can change it now or keep it for the moment.',
+      showDenyButton: true,
+      confirmButtonText: 'Change now',
+      denyButtonText: 'Keep it',
+      allowOutsideClick: false,
+    });
+
+    if (!result.isConfirmed) {
+      return sessionUser;
+    }
+
+    const passwordResult = await Swal.fire({
+      title: 'Set new password',
+      html: `
+        <input id="new-password" type="password" class="swal2-input" placeholder="New password" autocomplete="new-password" />
+        <input id="confirm-password" type="password" class="swal2-input" placeholder="Confirm password" autocomplete="new-password" />
+      `,
+      confirmButtonText: 'Update password',
+      showCancelButton: true,
+      focusConfirm: false,
+      preConfirm: async () => {
+        const newPassword = document.getElementById('new-password')?.value || '';
+        const confirmPassword =
+          document.getElementById('confirm-password')?.value || '';
+
+        if (!newPassword || !confirmPassword) {
+          Swal.showValidationMessage('Enter and confirm your new password.');
+          return false;
+        }
+
+        if (newPassword !== confirmPassword) {
+          Swal.showValidationMessage('The passwords do not match.');
+          return false;
+        }
+
+        try {
+          if (sessionUser.role === 'STAFF') {
+            await authService.changeStaffPassword(sessionUser.firm_role, {
+              current_password: password,
+              new_password: newPassword,
+              confirm_password: confirmPassword,
+            });
+          } else {
+            await authService.changePassword({
+            current_password: password,
+            new_password: newPassword,
+            confirm_password: confirmPassword,
+          });
+          }
+          return true;
+          } catch (err) {
+          const message = getApiErrorMessage(
+            err,
+            'Could not update password.',
+          );
+          Swal.showValidationMessage(message);
+          return false;
+        }
+      },
+    });
+
+    if (!passwordResult.isConfirmed) {
+      return sessionUser;
+    }
+
+    const updatedUser = {
+      ...sessionUser,
+      must_change_password: false,
+    };
+
+    saveAuthSession({ user: updatedUser, access, refresh }, rememberMe);
+    authLogin({ user: updatedUser, access, refresh }, rememberMe);
+
+    await Swal.fire({
+      icon: 'success',
+      title: 'Password updated',
+      text: 'Your new password is ready to use.',
+      timer: 1500,
+      showConfirmButton: false,
+    });
+
+    return updatedUser;
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
 
     try {
-      const data = await login({ email, password });
+      const data = await authService.login({ email, password });
 
       if (!data) throw new Error('Invalid login response');
 
@@ -43,44 +165,40 @@ export default function Login() {
       };
 
       /* =====================================================
-         TOKEN STORAGE (single, consistent auth source)
+         AUTH CONTEXT UPDATE + STORAGE
       ===================================================== */
-      saveAuthSession({ user: sessionUser, access, refresh }, rememberMe);
+      flushSync(() => {
+        authLogin({ user: sessionUser, access, refresh }, rememberMe);
+      });
 
       /* =====================================================
-         AUTH CONTEXT UPDATE (UI state only)
+         FIRST-TIME PASSWORD CHOICE
       ===================================================== */
-      authLogin({ user: sessionUser, access, refresh }, rememberMe);
+      const finalUser = await promptPasswordChoice({
+        sessionUser,
+        access,
+        refresh,
+      });
 
       /* =====================================================
          ROLE ROUTING
       ===================================================== */
-      const role = sessionUser.role;
-      const sessionFirmRole = sessionUser.firm_role;
-
-      if (role === 'ADMIN') return navigate('/admin/dashboard');
-
-      if (role === 'OFFICIAL_CLIENT') return navigate('/client/dashboard');
-
-      if (role === 'PORTAL_CLIENT') return navigate('/portal/dashboard');
-
-      if (role === 'STAFF') {
-        if (sessionFirmRole === 'LAWYER') return navigate('/lawyer/dashboard');
-        if (sessionFirmRole === 'SECRETARY')
-          return navigate('/secretary/dashboard');
-        return navigate('/');
-      }
-
-      navigate('/');
+      setOpeningDashboard(true);
+      return navigateByRole(finalUser);
     } catch (err) {
       console.error('Login failed:', err);
+      setError(getApiErrorMessage(err, 'Login failed'));
+    } finally {
+      if (!openingDashboard) {
+        setLoading(false);
+      }
     }
   };
 
   return (
     <div className='flex-1 flex flex-col lg:flex-row'>
       {/* LEFT PANEL */}
-      <div className='hidden lg:flex lg:w-1/2 bg-blue-700 relative items-center justify-center p-10 overflow-hidden'>
+      <div className='hidden lg:flex lg:w-1/2 bg-[color:var(--brand-primary)] dark:bg-blue-950 relative items-center justify-center p-10 overflow-hidden'>
         <motion.div
           animate={{ scale: [1, 1.2, 1], x: [0, 40, 0], y: [0, -30, 0] }}
           transition={{ duration: 8, repeat: Infinity }}
@@ -97,7 +215,7 @@ export default function Login() {
       </div>
 
       {/* RIGHT PANEL */}
-      <div className='w-full lg:w-1/2 flex items-center justify-center px-6 py-24 bg-gray-50'>
+      <div className='w-full lg:w-1/2 flex items-center justify-center px-6 py-24 bg-gray-50 dark:bg-[#0b1220]'>
         <Card className='w-full max-w-md p-8'>
           <Link
             to='/'
@@ -131,7 +249,7 @@ export default function Login() {
                REMEMBER ME (NOW FUNCTIONAL)
             ===================================================== */}
             <div className='flex justify-between text-sm'>
-              <label className='flex items-center gap-2 text-gray-800'>
+              <label className='flex items-center gap-2 text-gray-800 dark:text-gray-200'>
                 <input
                   type='checkbox'
                   checked={rememberMe}
@@ -152,7 +270,7 @@ export default function Login() {
                 {/* ACCOUNT RECOVERY FLOW (NEW) */}
                 <Link
                   to='/recover-account'
-                  className='text-gray-600 hover:text-blue-700 text-xs'
+                  className='text-gray-600 hover:text-blue-700 dark:text-gray-300 dark:hover:text-blue-300 text-xs'
                 >
                   Can’t access your email?
                 </Link>
@@ -160,19 +278,21 @@ export default function Login() {
             </div>
 
             <Button3D type='submit' className='w-full' disabled={loading}>
-              {loading ? 'Logging in...' : 'Login'}
+              {openingDashboard
+                ? 'Opening dashboard...'
+                : loading
+                  ? 'Signing in...'
+                  : 'Login'}
             </Button3D>
 
             {/* ERROR */}
             {error && (
-              <p className='text-red-500 text-center text-sm'>
-                {error?.response?.data?.message ||
-                  error?.message ||
-                  'Login failed'}
+              <p className='text-red-500 dark:text-red-300 text-center text-sm'>
+                {error}
               </p>
             )}
 
-            <p className='text-sm text-center mt-6 text-gray-600'>
+            <p className='text-sm text-center mt-6 text-gray-600 dark:text-gray-300'>
               Don’t have an account?{' '}
               <Link to='/register' className='text-blue-600 font-bold'>
                 Create account

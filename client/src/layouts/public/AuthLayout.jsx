@@ -4,17 +4,19 @@ import { Outlet } from "react-router-dom";
 
 export default function AuthLayout() {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-900 via-blue-700 to-indigo-900 text-white">
+    <div className="auth-layout min-h-screen flex flex-col bg-[color:var(--bg)] text-[color:var(--text-primary)] dark:bg-[#050816] dark:text-white">
       {/* Navbar */}
       <PublicNavbar variant="auth" />
 
       {/* AUTH CONTENT AREA */}
-      <main className="flex-1 flex items-center justify-center px-4 py-10">
+      <main className="auth-main flex-1 flex items-center justify-center px-4 py-10">
         <Outlet />
       </main>
 
       {/* Footer */}
-      <Footer />
+      <div className="auth-footer">
+        <Footer />
+      </div>
     </div>
   );
 }

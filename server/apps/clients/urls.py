@@ -9,5 +9,6 @@ urlpatterns = [
     path("profile/", ClientProfileView.as_view(), name="client-profile"),
     path("dashboard/", ClientDashboardView.as_view(), name="client-dashboard"),
     path("cases/", ClientCasesView.as_view(), name="client-cases"),
+    path("cases/<str:case_id>/", ClientCasesView.as_view(), name="client-case-detail"),
     path("documents/", ClientDocumentsView.as_view(), name="client-documents"),
 ]

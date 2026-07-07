@@ -1,14 +1,38 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import ThemeContext from '@/core/store/ThemeContext';
+import {
+  getThemeStorageKey,
+  isValidTheme,
+  persistLastActiveTheme,
+  readLastActiveTheme,
+} from '@/core/utils/themeIdentity';
 
 const ThemeProvider = ({ children, user, role }) => {
-  const storageKey = useMemo(() => {
-    const uniqueUserId =
-      user?.user_id || user?.id || user?._id || user?.email || 'guest';
+  const storageKey = useMemo(
+    () => getThemeStorageKey({ role, user }),
+    [role, user],
+  );
 
-    return `theme-${role || 'public'}-${uniqueUserId}`;
-  }, [role, user?.user_id, user?.id, user?._id, user?.email]);
+  const followsLastActiveTheme = useMemo(
+    () => ['auth', 'public'].includes(String(role || '').toLowerCase()),
+    [role],
+  );
+
+  const resolveInitialTheme = () => {
+    const storedTheme = localStorage.getItem(storageKey);
+    const lastActiveTheme = readLastActiveTheme();
+
+    if (followsLastActiveTheme && lastActiveTheme) {
+      return lastActiveTheme;
+    }
+
+    if (isValidTheme(storedTheme)) {
+      return storedTheme;
+    }
+
+    return lastActiveTheme || 'light';
+  };
 
   /*
     Prevent unnecessary sync loops
@@ -20,7 +44,7 @@ const ThemeProvider = ({ children, user, role }) => {
     to avoid flash/flicker
   */
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem(storageKey) || 'light';
+    return resolveInitialTheme();
   });
 
   /*
@@ -30,9 +54,7 @@ const ThemeProvider = ({ children, user, role }) => {
     if (previousStorageKey.current !== storageKey) {
       previousStorageKey.current = storageKey;
 
-      const savedTheme = localStorage.getItem(storageKey) || 'light';
-
-      setTheme(savedTheme);
+      setTheme(resolveInitialTheme());
     }
   }, [storageKey]);
 
@@ -45,6 +67,7 @@ const ThemeProvider = ({ children, user, role }) => {
     root.classList.toggle('dark', theme === 'dark');
 
     localStorage.setItem(storageKey, theme);
+    persistLastActiveTheme(theme);
   }, [theme, storageKey]);
 
   const toggleTheme = () => {

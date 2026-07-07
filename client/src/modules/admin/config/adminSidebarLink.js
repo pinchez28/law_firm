@@ -11,6 +11,7 @@ import {
   MessageSquare,
   ShieldCheck,
   Settings,
+  Building2,
   Bot,
   Brain,
   Lightbulb,
@@ -73,4 +74,7 @@ export const adminSidebarLinks = [
 
   /* ================= SETTINGS ================= */
   { name: 'Settings', path: '/admin/settings', icon: Settings },
+
+  /* ================= FIRM ================= */
+  { name: 'Firm', path: '/admin/firm', icon: Building2 },
 ];

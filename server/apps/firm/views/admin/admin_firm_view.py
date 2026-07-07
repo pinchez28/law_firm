@@ -1,20 +1,16 @@
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from apps.firm.models import LawFirm
 from apps.firm.serializers.firm_serializer import LawFirmSerializer
 from apps.firm.services.firm_service import FirmService
 from apps.firm.services.firm_analytics_service import FirmAnalyticsService
+from apps.firm.views.admin.admin_firm_base_view import AdminFirmBaseView
 
 
-class AdminFirmDetailView(APIView):
+class AdminFirmDetailView(AdminFirmBaseView):
     """
     Admin endpoint to view and update the current law firm.
     """
-
-    permission_classes = [IsAuthenticated]
 
     PROTECTED_FIELDS = {
         "id",
@@ -25,9 +21,7 @@ class AdminFirmDetailView(APIView):
     }
 
     def get(self, request):
-        firm = LawFirm.objects.select_related("owner").get(
-            owner=request.user
-        )
+        firm = self.get_firm()
 
         return Response({
             "firm": LawFirmSerializer(firm).data,
@@ -35,7 +29,7 @@ class AdminFirmDetailView(APIView):
         })
 
     def patch(self, request):
-        firm = request.user.owned_firm
+        firm = self.get_firm()
 
         protected = self.PROTECTED_FIELDS.intersection(request.data.keys())
 

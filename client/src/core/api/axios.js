@@ -5,6 +5,7 @@ import {
   getAuthStorage,
   getStoredAuth,
 } from '@/core/utils/authStorage';
+import { attachApiErrorMessage } from '@/core/utils/errorMessages';
 
 /* =========================================================
    BASE INSTANCE
@@ -78,6 +79,7 @@ axiosInstance.interceptors.response.use(
       originalRequest?.url?.includes('/token/refresh');
 
     if (status !== 401 || isAuthEndpoint) {
+      attachApiErrorMessage(error);
       return Promise.reject(error);
     }
 
@@ -85,6 +87,7 @@ axiosInstance.interceptors.response.use(
     if (originalRequest._retry) {
       clearAuthSession();
       window.location.href = '/login';
+      attachApiErrorMessage(error);
       return Promise.reject(error);
     }
 
@@ -138,6 +141,7 @@ axiosInstance.interceptors.response.use(
 
       window.location.href = '/login';
 
+      attachApiErrorMessage(err);
       return Promise.reject(err);
     } finally {
       isRefreshing = false;

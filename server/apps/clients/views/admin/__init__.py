@@ -7,6 +7,13 @@ from .client_admin_lawyers_view import ClientAdminLawyersView
 from .client_admin_assign_view import ClientAdminAssignView
 from .client_admin_remove_lawyer_view import ClientAdminRemoveLawyerView
 from .client_admin_delete_view import ClientAdminDeleteView
+from .individual_admin_create_client_view import IndividualAdminCreateClientView
+from .company_admin_create_client_view import CompanyAdminCreateClientView
+from .partnership_admin_create_client_view import PartnershipAdminCreateClientView
+from .ngo_admin_create_client_view import NGOAdminCreateClientView
+from .trust_admin_create_client_view import TrustAdminCreateClientView
+from .estate_admin_create_client_view import EstateAdminCreateClientView
+from .government_admin_create_client_view import GovernmentAdminCreateClientView
 
 __all__ = [
     "ClientAdminListView",
@@ -18,4 +25,11 @@ __all__ = [
     "ClientAdminAssignView",
     "ClientAdminRemoveLawyerView",
     "ClientAdminDeleteView",
+    "IndividualAdminCreateClientView",
+    "CompanyAdminCreateClientView",
+    "PartnershipAdminCreateClientView",
+    "NGOAdminCreateClientView",
+    "TrustAdminCreateClientView",
+    "EstateAdminCreateClientView",
+    "GovernmentAdminCreateClientView",
 ]

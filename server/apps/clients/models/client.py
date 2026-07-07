@@ -8,6 +8,10 @@ class Client(models.Model):
     class ClientType(models.TextChoices):
         INDIVIDUAL = "INDIVIDUAL", "Individual"
         COMPANY = "COMPANY", "Company"
+        PARTNERSHIP = "PARTNERSHIP", "Partnership"
+        NGO = "NGO", "NGO"
+        TRUST = "TRUST", "Trust"
+        GOVERNMENT = "GOVERNMENT", "Government"
         BUSINESS_ENTITY = "BUSINESS_ENTITY", "Business Entity"
         GOVERNMENT_BODY = "GOVERNMENT_BODY", "Government Body"
         FINANCIAL_INSTITUTION = "FINANCIAL_INSTITUTION", "Financial Institution"

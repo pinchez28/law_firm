@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import Swal from 'sweetalert2';
 
 import authService from '@/modules/auth/service/authService';
 import {
@@ -7,6 +6,8 @@ import {
   getAuthStorage,
   getStoredAuth,
 } from '@/core/utils/authStorage';
+import Swal from '@/core/utils/themedSwal';
+import { getApiErrorMessage } from '@/core/utils/errorMessages';
 
 export default function useAuth() {
   const [loading, setLoading] = useState(false);
@@ -65,12 +66,7 @@ export default function useAuth() {
 
       return response;
     } catch (err) {
-      const message =
-        err?.response?.data?.message ||
-        err?.response?.data?.detail ||
-        err?.response?.data?.errors ||
-        err.message ||
-        'Something went wrong';
+      const message = getApiErrorMessage(err);
 
       setError(message);
 

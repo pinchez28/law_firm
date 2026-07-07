@@ -22,7 +22,12 @@ class LoginView(APIView):
 
         if error:
             return Response(
-                {"detail": error},
+                {
+                    "success": False,
+                    "message": error,
+                    "detail": error,
+                    "errors": {},
+                },
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
@@ -38,6 +43,7 @@ class LoginView(APIView):
                 "email": user.email,
                 "full_name": f"{user.first_name} {user.last_name}",
                 "role": result["role"],
+                "must_change_password": user.must_change_password,
             },
 
             "firm": {

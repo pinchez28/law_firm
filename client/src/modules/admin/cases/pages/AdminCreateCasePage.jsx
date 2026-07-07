@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Swal from 'sweetalert2';
+import Swal from '@/core/utils/themedSwal';
 
 import Card from '@/components/ui/Card';
 import Button3D from '@/components/ui/Button3D';

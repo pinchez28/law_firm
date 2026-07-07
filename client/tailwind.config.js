@@ -7,43 +7,43 @@ export default {
       colors: {
         // Base backgrounds
         background: {
-          light: '#F5F5F4', // stone-100
+          light: '#F3F0EA',
           dark: '#0B1220',
         },
 
         surface: {
-          light: '#FAFAF9', // stone-50
+          light: '#FFFDF8',
           dark: '#111B2E',
         },
 
         border: {
-          light: '#E7E5E4', // stone-200
+          light: '#D8D2C8',
           dark: '#1F2A44',
         },
 
         // Text
         text: {
           primary: {
-            light: '#111827', // gray-900
+            light: '#1F2933',
             dark: '#E5E7EB',
           },
           muted: {
-            light: '#6B7280', // gray-500
+            light: '#5F6673',
             dark: '#94A3B8',
           },
         },
 
         // Brand colors
         brand: {
-          primary: '#2563EB', // blue-600
-          accent: '#FBBF24', // yellow-400
+          primary: '#12385A',
+          accent: '#B88A2B',
         },
 
         // Status colors
-        success: '#10B981',
-        warning: '#F59E0B',
-        error: '#EF4444',
-        info: '#3B82F6',
+        success: '#0F8F67',
+        warning: '#B87503',
+        error: '#C2413A',
+        info: '#2563EB',
       },
 
       fontFamily: {
@@ -52,9 +52,9 @@ export default {
       },
 
       boxShadow: {
-        soft: '0 2px 12px rgba(0,0,0,0.08)',
-        medium: '0 6px 20px rgba(0,0,0,0.15)',
-        strong: '0 12px 36px rgba(0,0,0,0.2)',
+        soft: '0 2px 10px rgba(31,41,51,0.08)',
+        medium: '0 8px 22px rgba(31,41,51,0.12)',
+        strong: '0 14px 34px rgba(31,41,51,0.18)',
       },
 
       borderRadius: {

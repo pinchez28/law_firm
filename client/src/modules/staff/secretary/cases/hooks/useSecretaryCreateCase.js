@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Swal from 'sweetalert2';
+import Swal from '@/core/utils/themedSwal';
 
 import secretaryCasesService from '@/modules/staff/secretary/cases/services/secretaryCaseService';
 

@@ -169,6 +169,11 @@ const AdminSettingsPage = lazy(
   () => import('@/modules/admin/settings/pages/AdminSettingsPage'),
 );
 
+/* FIRM */
+const AdminFirmPage = lazy(
+  () => import('@/modules/admin/firm/pages/AdminFirmPage'),
+);
+
 /* AI */
 const AdminAIOverviewPage = lazy(
   () => import('@/modules/admin/ai/pages/AdminAIOverviewPage'),
@@ -518,6 +523,9 @@ const AppRoutes = () => {
 
           {/* SETTINGS */}
           <Route path='settings' element={<AdminSettingsPage />} />
+
+          {/* FIRM */}
+          <Route path='firm' element={<AdminFirmPage />} />
 
           {/* AI */}
           <Route path='ai' element={<AdminAIOverviewPage />} />

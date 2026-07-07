@@ -4,7 +4,9 @@ from apps.clients.models import (
     Client,
     ClientAddress,
     ClientContact,
-    IndividualClient,
+)
+from apps.clients.serializers.client.client_type_profile_serializer import (
+    serialize_client_type_profile,
 )
 
 
@@ -26,20 +28,11 @@ class ClientContactSerializer(
         fields = "__all__"
 
 
-class IndividualProfileSerializer(
-    serializers.ModelSerializer
-):
-
-    class Meta:
-        model = IndividualClient
-        exclude = ["client"]
-
-
 class ClientDetailSerializer(
     serializers.ModelSerializer
 ):
 
-    individual_profile = serializers.SerializerMethodField()
+    type_profile = serializers.SerializerMethodField()
 
     addresses = ClientAddressSerializer(
         many=True,
@@ -74,7 +67,7 @@ class ClientDetailSerializer(
             "created_at",
             "updated_at",
 
-            "individual_profile",
+            "type_profile",
             "addresses",
             "contacts",
 
@@ -82,21 +75,11 @@ class ClientDetailSerializer(
             "cases",
         ]
 
-    def get_individual_profile(
+    def get_type_profile(
         self,
         obj,
     ):
-        if hasattr(
-            obj,
-            "individual_profile",
-        ):
-            return (
-                IndividualProfileSerializer(
-                    obj.individual_profile
-                ).data
-            )
-
-        return None
+        return serialize_client_type_profile(obj)
 
     def get_cases(
         self,

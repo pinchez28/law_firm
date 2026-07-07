@@ -12,7 +12,7 @@ import FloatingAIChat from '@/components/ai/FloatingAIChat';
 
 export default function HomePage() {
   return (
-    <div className='overflow-x-hidden'>
+    <div className='public-home overflow-x-hidden bg-[color:var(--bg)] text-[color:var(--text-primary)]'>
       {/* AI Chat */}
       <FloatingAIChat />
 

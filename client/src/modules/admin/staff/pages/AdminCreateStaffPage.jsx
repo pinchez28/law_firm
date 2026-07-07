@@ -1,19 +1,25 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 
-import Swal from 'sweetalert2';
+import Swal from '@/core/utils/themedSwal';
 
 import Card from '@/components/ui/Card';
 import Button3D from '@/components/ui/Button3D';
 import SectionHeading from '@/components/ui/SectionHeading';
 import FloatingInput from '@/components/ui/FloatingInput';
 
+import adminFirmService from '@/modules/admin/firm/services/adminFirmService';
 import { useAdminStaff } from '@/modules/admin/staff/hooks/useAdminStaff';
 
 export default function AdminCreateStaffPage() {
   const navigate = useNavigate();
 
   const { createStaff } = useAdminStaff();
+  const { data: departments = [], isLoading: isLoadingDepartments } = useQuery({
+    queryKey: ['admin-firm-departments'],
+    queryFn: adminFirmService.getDepartments,
+  });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -36,6 +42,12 @@ export default function AdminCreateStaffPage() {
     employment_type: 'PERMANENT',
     date_hired: new Date().toISOString().slice(0, 10),
     professional_summary: '',
+    can_prepare_documents: true,
+    can_schedule_appointments: true,
+    can_manage_client_intake: true,
+    can_receive_documents: true,
+    permission_codes: [],
+    notes: '',
   });
 
   const handleChange = (e) => {
@@ -50,9 +62,9 @@ export default function AdminCreateStaffPage() {
   const handlePermissionChange = (permission) => {
     setFormData((prev) => ({
       ...prev,
-      permissions: prev.permissions.includes(permission)
-        ? prev.permissions.filter((p) => p !== permission)
-        : [...prev.permissions, permission],
+      permission_codes: prev.permission_codes.includes(permission)
+        ? prev.permission_codes.filter((p) => p !== permission)
+        : [...prev.permission_codes, permission],
     }));
   };
 
@@ -63,18 +75,32 @@ export default function AdminCreateStaffPage() {
     try {
       setIsSubmitting(true);
 
-      if (formData.firm_role !== 'LAWYER') {
-        throw new Error('Only lawyer creation is connected at the moment.');
-      }
-
-      await createStaff(formData);
+      const response = await createStaff(formData);
+      const tempPassword = response?.temp_password;
 
       await Swal.fire({
         icon: 'success',
         title: 'Success',
-        text: 'Staff created successfully.',
-        timer: 2000,
-        showConfirmButton: false,
+        html: `
+          <div style="text-align:left">
+            <p>Staff created successfully.</p>
+            ${
+              tempPassword
+                ? `
+                  <div style="margin-top:12px;padding:12px;border-radius:8px;background:#f8fafc;border:1px solid #e2e8f0">
+                    <p style="margin:0 0 6px 0"><strong>Temporary Password</strong></p>
+                    <code style="font-size:16px;font-weight:700">${tempPassword}</code>
+                  </div>
+                  <p style="margin-top:10px;font-size:13px;color:#64748b">
+                    Share this with the staff member. They will be required to change it after login.
+                  </p>
+                `
+                : ''
+            }
+          </div>
+        `,
+        confirmButtonText: 'Continue',
+        confirmButtonColor: '#2563eb',
       });
 
       navigate('/admin/staff');
@@ -144,6 +170,8 @@ export default function AdminCreateStaffPage() {
                 setFormData({
                   ...formData,
                   firm_role: e.target.value,
+                  job_title:
+                    e.target.value === 'SECRETARY' ? 'Secretary' : 'Lawyer',
                 })
               }
               className='
@@ -166,17 +194,20 @@ export default function AdminCreateStaffPage() {
   '
             >
               <option value='LAWYER'>Lawyer</option>
+              <option value='SECRETARY'>Secretary</option>
             </select>
           </div>
 
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            <FloatingInput
-              label='Admission Number'
-              name='admission_number'
-              value={formData.admission_number}
-              onChange={handleChange}
-              required
-            />
+            {formData.firm_role === 'LAWYER' && (
+              <FloatingInput
+                label='Admission Number'
+                name='admission_number'
+                value={formData.admission_number}
+                onChange={handleChange}
+                required
+              />
+            )}
 
             <FloatingInput
               label='Date Hired'
@@ -187,12 +218,41 @@ export default function AdminCreateStaffPage() {
               required
             />
 
-            <FloatingInput
-              label='Department'
-              name='department'
-              value={formData.department}
-              onChange={handleChange}
-            />
+            <div className='space-y-2'>
+              <label
+                htmlFor='department'
+                className='block text-sm font-medium text-text-primary-light dark:text-text-primary-dark'
+              >
+                Department
+              </label>
+
+              <select
+                id='department'
+                name='department'
+                value={formData.department}
+                onChange={handleChange}
+                disabled={isLoadingDepartments}
+                className='
+                  w-full h-12 rounded-2xl border border-border-light dark:border-border-dark
+                  bg-surface-light dark:bg-surface-dark
+                  text-text-primary-light dark:text-text-primary-dark
+                  px-4 shadow-soft transition-all
+                  focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary
+                '
+              >
+                <option value=''>
+                  {isLoadingDepartments
+                    ? 'Loading departments...'
+                    : 'Select department'}
+                </option>
+
+                {departments.map((department) => (
+                  <option key={department.id} value={department.name}>
+                    {department.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             <FloatingInput
               label='Job Title'
@@ -230,6 +290,66 @@ export default function AdminCreateStaffPage() {
               onChange={handleChange}
             />
           </div>
+
+          {formData.firm_role === 'SECRETARY' && (
+            <div className='space-y-4 rounded-xl border border-border-light dark:border-border-dark p-4'>
+              <h3 className='font-semibold'>Secretary Default Work</h3>
+
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                {[
+                  ['can_prepare_documents', 'Prepare Documents'],
+                  ['can_schedule_appointments', 'Schedule Appointments'],
+                  ['can_manage_client_intake', 'Manage Client Intake'],
+                  ['can_receive_documents', 'Receive Documents'],
+                ].map(([name, label]) => (
+                  <label key={name} className='flex items-center gap-2'>
+                    <input
+                      type='checkbox'
+                      checked={Boolean(formData[name])}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          [name]: e.target.checked,
+                        }))
+                      }
+                    />
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </div>
+
+              <h3 className='font-semibold pt-2'>Extra Admin Permissions</h3>
+
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                {[
+                  ['MANAGE_CASES', 'Manage Cases'],
+                  ['MANAGE_TASKS', 'Manage Tasks'],
+                  ['MANAGE_CLIENTS', 'Manage Clients'],
+                  ['MANAGE_DOCUMENTS', 'Manage Documents'],
+                  ['MANAGE_CALENDAR', 'Manage Calendar'],
+                  ['SEND_COMMUNICATIONS', 'Send Communications'],
+                  ['VIEW_REPORTS', 'View Reports'],
+                  ['MANAGE_BILLING', 'Manage Billing'],
+                ].map(([code, label]) => (
+                  <label key={code} className='flex items-center gap-2'>
+                    <input
+                      type='checkbox'
+                      checked={formData.permission_codes.includes(code)}
+                      onChange={() => handlePermissionChange(code)}
+                    />
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </div>
+
+              <FloatingInput
+                label='Notes'
+                name='notes'
+                value={formData.notes}
+                onChange={handleChange}
+              />
+            </div>
+          )}
 
           <div className='flex gap-3 pt-4'>
             <Button3D

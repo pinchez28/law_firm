@@ -253,16 +253,40 @@ export default function AdminClientDetailsPage() {
                 value: contact.phone_number,
               },
               {
+                label: 'Alternative Phone',
+                value: contact.alternative_phone_number,
+              },
+              {
                 label: 'Email',
                 value: contact.email?.toLowerCase(),
+              },
+              {
+                label: 'National ID',
+                value: contact.national_id_number,
+              },
+              {
+                label: 'Relationship / Role',
+                value: titleCase(contact.role_or_designation),
               },
               {
                 label: 'Contact Type',
                 value: enumLabel(contact.contact_type),
               },
               {
+                label: 'Preferred Channel',
+                value: enumLabel(contact.preferred_channel),
+              },
+              {
                 label: 'Primary',
                 value: contact.is_primary ? 'Yes' : 'No',
+              },
+              {
+                label: 'Verified',
+                value: contact.is_verified ? 'Yes' : 'No',
+              },
+              {
+                label: 'Notes',
+                value: contact.notes,
               },
             ].filter((field) => hasValue(field.value));
 

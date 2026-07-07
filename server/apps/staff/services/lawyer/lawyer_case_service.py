@@ -6,7 +6,7 @@ class LawyerCaseService:
 
         return [
             {
-                "id": "case-001",
+                "id": "11111111-1111-1111-1111-111111111111",
                 "title": "Sample litigation matter",
                 "case_number": "LC-2026-001",
                 "status": "ACTIVE",
@@ -16,3 +16,10 @@ class LawyerCaseService:
                 "last_updated": "2026-07-05T00:00:00Z",
             }
         ]
+
+    @classmethod
+    def get_case(cls, user, case_id):
+        for case in cls.list_cases(user):
+            if str(case["id"]) == str(case_id):
+                return case
+        return None

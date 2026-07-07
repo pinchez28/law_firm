@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useLocation } from 'react-router-dom';
+import { Moon, Sun } from 'lucide-react';
 import logo from '@/assets/images/logo.png';
 import NavLink from '@/components/ui/Navlink';
-import Button3D from '@/components/ui/Button3D';
+import ThemeContext from '@/core/store/ThemeContext';
 
 const links = [
   { id: 'home', label: 'Home' },
@@ -16,6 +17,7 @@ const links = [
 
 export default function PublicNavbar() {
   const location = useLocation();
+  const { theme, toggleTheme } = useContext(ThemeContext);
 
   const isAuthPage = [
     '/login',
@@ -71,8 +73,10 @@ export default function PublicNavbar() {
       <div className='fixed top-3 md:top-5 left-1/2 -translate-x-1/2 z-50 w-[95%] md:w-[92%]'>
         <div
           className='
+            public-navbar-shell
             flex items-center justify-between
-            px-6 md:px-10 py-4
+            gap-3
+            px-4 md:px-6 py-4
             rounded-2xl
             bg-[color:var(--brand-primary)]
             border border-[color:var(--border-light)]
@@ -81,21 +85,21 @@ export default function PublicNavbar() {
           '
         >
           {/* Logo */}
-          <div className='flex items-center gap-3'>
+          <div className='flex shrink-0 items-center gap-3'>
             <img
               src={logo}
               alt='Sheria Desk Logo'
-              className='h-16 w-16 md:h-20 md:w-20 rounded-2xl object-cover border border-white/20'
+              className='h-14 w-14 md:h-16 md:w-16 rounded-2xl object-cover border border-white/20'
             />
 
-            <span className='text-yellow-600 font-extrabold text-xl md:text-2xl tracking-wide'>
+            <span className='hidden xl:inline whitespace-nowrap text-yellow-600 font-extrabold text-lg tracking-wide'>
               kulecho & Co Advocates
             </span>
           </div>
 
           {/* Desktop Navigation */}
           {!isAuthPage && (
-            <div className='hidden lg:flex items-center gap-6'>
+            <div className='hidden lg:flex items-center gap-4'>
               {links.map((link) => (
                 <div key={link.id} className='relative group'>
                   <NavLink
@@ -106,7 +110,7 @@ export default function PublicNavbar() {
                       text-white
                       font-extrabold
                       tracking-wide
-                      text-sm xl:text-base
+                      text-sm
                       transition-all duration-300
                       hover:text-[color:var(--brand-accent)]
                     '
@@ -126,24 +130,36 @@ export default function PublicNavbar() {
             </div>
           )}
 
-          {/* Hamburger Menu */}
-          {!isAuthPage && (
+          <div className='flex items-center gap-3'>
             <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className='lg:hidden flex flex-col gap-1.5 p-2'
-              aria-label='Toggle menu'
+              type='button'
+              onClick={toggleTheme}
+              className='inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-white shadow-sm transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/40'
+              aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+              title={theme === 'dark' ? 'Light theme' : 'Dark theme'}
             >
-              <span
-                className={`w-7 h-0.5 bg-white rounded-full transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`}
-              />
-              <span
-                className={`w-7 h-0.5 bg-white rounded-full transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`}
-              />
-              <span
-                className={`w-7 h-0.5 bg-white rounded-full transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`}
-              />
+              {theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}
             </button>
-          )}
+
+            {/* Hamburger Menu */}
+            {!isAuthPage && (
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                className='lg:hidden flex flex-col gap-1.5 p-2'
+                aria-label='Toggle menu'
+              >
+                <span
+                  className={`w-7 h-0.5 bg-white rounded-full transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`}
+                />
+                <span
+                  className={`w-7 h-0.5 bg-white rounded-full transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`}
+                />
+                <span
+                  className={`w-7 h-0.5 bg-white rounded-full transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`}
+                />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

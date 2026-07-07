@@ -3,7 +3,7 @@ import axiosInstance from '@/core/api/axios';
 const secretaryCasesService = {
   // LIST
   async getMyCases(params = {}) {
-    const { data } = await axiosInstance.get('/cases/secretary/cases/', {
+    const { data } = await axiosInstance.get('/staff/secretary/cases/', {
       params,
     });
 
@@ -12,19 +12,13 @@ const secretaryCasesService = {
 
   // DETAIL
   async getMyCaseById(caseId) {
-    const { data } = await axiosInstance.get(
-      `/cases/secretary/cases/${caseId}/`,
-    );
-
-    return data.data;
+    const { cases } = await this.getMyCases();
+    return cases.find((caseItem) => String(caseItem.id) === String(caseId));
   },
 
   // CREATE (NEW SECRETARY ENDPOINT)
   async createCase(payload) {
-    const { data } = await axiosInstance.post(
-      '/cases/secretary/cases/create/',
-      payload,
-    );
+    const { data } = await axiosInstance.post('/staff/secretary/cases/', payload);
 
     return data;
   },
