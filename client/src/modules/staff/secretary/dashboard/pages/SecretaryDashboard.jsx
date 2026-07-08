@@ -1,9 +1,11 @@
 import {
   Activity,
   Bell,
+  Briefcase,
   CalendarDays,
   CheckSquare,
   FileText,
+  Users,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,6 +15,24 @@ import DashboardTile from '@/components/dashboard/DashboardTile';
 import useSecretaryDashboard from '@/modules/staff/secretary/dashboard/hooks/useSecretaryDashboard';
 
 const secretaryTiles = [
+  {
+    title: 'Clients',
+    subtitle: 'View and create firm clients',
+    icon: Users,
+    variant: 'clients',
+    size: 'wide',
+    path: '/secretary/clients',
+    permission: 'MANAGE_CLIENTS',
+  },
+  {
+    title: 'Cases',
+    subtitle: 'View and create firm cases',
+    icon: Briefcase,
+    variant: 'cases',
+    size: 'wide',
+    path: '/secretary/cases',
+    permission: 'MANAGE_CASES',
+  },
   {
     title: 'Notifications',
     subtitle: 'Recent alerts and administrative updates',
@@ -53,21 +73,23 @@ const secretaryTiles = [
     size: 'wide',
     path: '/secretary/documents',
   },
-  {
-    title: 'Activities',
-    subtitle: 'Recent office and case activity',
-    icon: Activity,
-    variant: 'activities',
-    size: 'wide',
-    path: '/secretary/clients',
-  },
 ];
+
+const hasPermission = (permissions, permission) => {
+  if (!permission) return true;
+  const normalized = permissions.map((item) => String(item).toUpperCase());
+  return normalized.includes(permission);
+};
 
 export default function SecretaryDashboard() {
   const navigate = useNavigate();
   const { data } = useSecretaryDashboard();
   const profile = data?.profile || {};
   const summary = data?.summary || {};
+  const permissions = data?.permissions || [];
+  const visibleTiles = secretaryTiles.filter((tile) =>
+    hasPermission(permissions, tile.permission),
+  );
 
   return (
     <>
@@ -81,7 +103,7 @@ export default function SecretaryDashboard() {
 
       <section className='mt-4'>
         <DashboardGrid>
-          {secretaryTiles.map((tile) => {
+          {visibleTiles.map((tile) => {
             const Icon = tile.icon;
 
             return (

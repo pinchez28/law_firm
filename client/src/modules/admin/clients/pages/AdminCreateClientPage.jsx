@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import Swal from '@/core/utils/themedSwal';
 
 import Card from '@/components/ui/Card';
@@ -8,11 +8,13 @@ import SectionHeading from '@/components/ui/SectionHeading';
 import FloatingInput from '@/components/ui/FloatingInput';
 import Select3D from '@/components/ui/Select3D';
 
-import { useAdminClients } from '@/modules/admin/clients/hooks/useAdminClients';
+import adminClientsService from '@/modules/admin/clients/services/adminClientsService';
+import secretaryClientsService from '@/modules/staff/secretary/clients/services/secretaryClientServices';
 
 export default function AdminCreateClientPage() {
   const navigate = useNavigate();
-  const { createClient } = useAdminClients();
+  const location = useLocation();
+  const isSecretaryCreate = location.pathname.startsWith('/secretary/');
 
   const [searchParams] = useSearchParams();
 
@@ -326,7 +328,9 @@ export default function AdminCreateClientPage() {
       setIsSubmitting(true);
 
       const payload = buildPayload();
-      const response = await createClient(payload, clientType);
+      const response = isSecretaryCreate
+        ? await secretaryClientsService.createClient(payload, clientType)
+        : await adminClientsService.createClient(payload, clientType);
 
       const tempPassword = response?.temp_password;
 
@@ -347,7 +351,7 @@ export default function AdminCreateClientPage() {
         confirmButtonColor: '#2563eb',
       });
 
-      navigate('/admin/clients');
+      navigate(isSecretaryCreate ? '/secretary/clients' : '/admin/clients');
     } catch (error) {
       const data = error?.response?.data;
 
@@ -1096,7 +1100,9 @@ export default function AdminCreateClientPage() {
             <Button3D
               type='button'
               variant='secondary'
-              onClick={() => navigate('/admin/clients')}
+              onClick={() =>
+                navigate(isSecretaryCreate ? '/secretary/clients' : '/admin/clients')
+              }
             >
               Cancel
             </Button3D>

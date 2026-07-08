@@ -5,6 +5,7 @@ import ThemeContext from '@/core/store/ThemeContext';
 import LogoutButton from '@/components/ui/LogoutButton';
 import SidebarNavLink from '@/components/ui/SidebarNavlink';
 import Brand from '@/components/ui/Brand';
+import useSecretaryDashboard from '@/modules/staff/secretary/dashboard/hooks/useSecretaryDashboard';
 
 import {
   LayoutDashboard,
@@ -30,12 +31,14 @@ const links = [
     name: 'Clients',
     path: '/secretary/clients',
     icon: Users,
+    permission: 'MANAGE_CLIENTS',
   },
 
   {
     name: 'Cases',
     path: '/secretary/cases',
     icon: Briefcase,
+    permission: 'MANAGE_CASES',
   },
 
   {
@@ -69,9 +72,20 @@ const links = [
   },
 ];
 
+const hasPermission = (permissions, permission) => {
+  if (!permission) return true;
+  const normalized = permissions.map((item) => String(item).toUpperCase());
+  return normalized.includes(permission);
+};
+
 export default function SecretarySidebar({ onClose }) {
   const { theme } = useContext(ThemeContext);
   const { user } = useContext(AuthContext);
+  const { data } = useSecretaryDashboard();
+  const permissions = data?.permissions || [];
+  const visibleLinks = links.filter((link) =>
+    hasPermission(permissions, link.permission),
+  );
   const displayName = user?.full_name || user?.profile?.full_name || user?.email || 'User';
   const systemRole = user?.role || 'User';
 
@@ -99,7 +113,7 @@ export default function SecretarySidebar({ onClose }) {
 
       {/* NAV */}
       <nav className='sidebar-scrollbar h-full flex-1 p-3 space-y-2 overflow-y-auto'>
-        {links.map((link) => {
+        {visibleLinks.map((link) => {
           const Icon = link.icon;
 
           return (

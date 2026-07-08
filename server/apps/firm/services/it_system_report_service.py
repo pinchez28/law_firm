@@ -154,7 +154,7 @@ class ITSystemReportService:
                 [
                     ("Case model active", True),
                     ("Cases available", Case.objects.filter(firm=firm).exists()),
-                    ("Default lawyer assignment support ready", True),
+                    ("Case assignment support ready", True),
                     ("Secretary assignment support ready", True),
                 ],
             ),
@@ -193,4 +193,3 @@ class ITSystemReportService:
         if percentage >= 70:
             return "WATCH"
         return "NEEDS_REPAIR"
-

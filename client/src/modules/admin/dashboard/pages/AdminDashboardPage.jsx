@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import DashboardHero from '@/components/dashboard/DashboardHero';
 import DashboardGrid from '@/components/dashboard/DashboardGrid';
 import DashboardTile from '@/components/dashboard/DashboardTile';
+import useAuth from '@/core/hooks/useAuth';
 
 const adminTiles = [
   {
@@ -128,12 +129,19 @@ const adminTiles = [
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const displayName =
+    user?.full_name?.trim() ||
+    user?.profile?.full_name?.trim() ||
+    user?.email ||
+    '';
 
   return (
     <>
       <DashboardHero
         badge='Administrator'
-        title='Welcome back, Ben 👋'
+        title={`Welcome back${displayName ? `, ${displayName}` : ''} 👋`}
         description='Monitor firm performance, manage staff, oversee client matters, and track legal operations from a single dashboard.'
         statusTitle='Firm Operational'
         statusDescription='All systems are running normally.'

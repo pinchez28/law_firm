@@ -662,6 +662,7 @@ const AppRoutes = () => {
 
           {/* CLIENTS */}
           <Route path='clients' element={<SecretaryClients />} />
+          <Route path='clients/create' element={<AdminCreateClientPage />} />
           <Route path='clients/:id' element={<SecretaryClientDetails />} />
 
           {/* CASES */}

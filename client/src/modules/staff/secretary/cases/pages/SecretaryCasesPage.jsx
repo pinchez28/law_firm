@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Briefcase, CheckCircle, Clock, FileText } from 'lucide-react';
@@ -10,17 +10,19 @@ import StatsCard from '@/components/ui/StatsCard';
 import DataTable from '@/components/ui/DataTable';
 import Button3D from '@/components/ui/Button3D';
 import SectionHeading from '@/components/ui/SectionHeading';
-import AuthContext from '@/core/store/AuthContext';
+import useSecretaryDashboard from '@/modules/staff/secretary/dashboard/hooks/useSecretaryDashboard';
+
+const hasPermission = (permissions, permission) =>
+  permissions.map((item) => String(item).toUpperCase()).includes(permission);
 
 export default function SecretaryCasesPage() {
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
 
   const { cases, loading, refetch } = useSecretaryCases();
+  const { data: dashboardData } = useSecretaryDashboard();
+  const permissions = dashboardData?.permissions || [];
 
-  const canManageCases =
-    Array.isArray(user?.permissions) &&
-    user.permissions.includes('manage_cases');
+  const canManageCases = hasPermission(permissions, 'MANAGE_CASES');
 
   const safeCases = Array.isArray(cases) ? cases : [];
 

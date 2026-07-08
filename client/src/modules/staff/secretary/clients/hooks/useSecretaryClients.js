@@ -5,21 +5,22 @@ export function useSecretaryClients() {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchClients = async () => {
+    try {
+      setLoading(true);
+      const res = await secretaryClientsService.getClients();
+
+      setClients(res.clients || []);
+    } catch {
+      setClients([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchClients = async () => {
-      try {
-        const res = await secretaryClientsService.getClients();
-
-        setClients(res.clients || []);
-      } catch {
-        setClients([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchClients();
   }, []);
 
-  return { clients, loading };
+  return { clients, loading, refetch: fetchClients };
 }

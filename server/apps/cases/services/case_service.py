@@ -115,7 +115,7 @@ class CaseService:
         ):
             return owner_lawyer
         raise PermissionError(
-            "The firm owner must be registered as a lawyer before cases can use the default lawyer assignment."
+            "The firm owner must be registered as a lawyer before cases can be assigned."
         )
 
     @staticmethod

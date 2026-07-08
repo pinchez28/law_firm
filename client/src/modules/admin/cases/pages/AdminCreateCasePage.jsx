@@ -244,7 +244,7 @@ export default function AdminCreateCasePage() {
                   : 'light',
               }}
             >
-              <option value=''>Default Firm Owner Lawyer</option>
+              <option value=''>Use firm assignment</option>
 
               {lawyers.map((l) => (
                 <option key={l.membership_id} value={l.membership_id}>
@@ -271,7 +271,7 @@ export default function AdminCreateCasePage() {
                   : 'light',
               }}
             >
-              <option value=''>Default Oldest Active Secretary</option>
+              <option value=''>Use firm assignment</option>
 
               {secretaries.map((s) => (
                 <option key={s.membership_id} value={s.membership_id}>

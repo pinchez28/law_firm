@@ -15,6 +15,7 @@ import Button3D from '@/components/ui/Button3D';
 import FloatingInput from '@/components/ui/FloatingInput';
 import Swal from '@/core/utils/themedSwal';
 import { getApiErrorMessage } from '@/core/utils/errorMessages';
+import { persistThemeForUser } from '@/core/utils/themeIdentity';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -48,6 +49,31 @@ export default function Login() {
     }
 
     return navigate('/', { replace: true });
+  };
+
+  const getDashboardThemeRole = (sessionUser) => {
+    if (sessionUser.role === 'ADMIN') return 'admin';
+    if (['OFFICIAL_CLIENT', 'PORTAL_CLIENT'].includes(sessionUser.role)) {
+      return 'client';
+    }
+
+    if (sessionUser.role === 'STAFF') {
+      return String(sessionUser.firm_role || '').toLowerCase();
+    }
+
+    return 'public';
+  };
+
+  const persistLoginThemeForDashboard = (sessionUser) => {
+    const currentTheme = document.documentElement.classList.contains('dark')
+      ? 'dark'
+      : 'light';
+
+    persistThemeForUser({
+      role: getDashboardThemeRole(sessionUser),
+      user: sessionUser,
+      theme: currentTheme,
+    });
   };
 
   const promptPasswordChoice = async ({ sessionUser, access, refresh }) => {
@@ -166,6 +192,8 @@ export default function Login() {
         ...user,
         firm_role: firmRole ?? user.firm_role ?? null,
       };
+
+      persistLoginThemeForDashboard(sessionUser);
 
       /* =====================================================
          AUTH CONTEXT UPDATE + STORAGE

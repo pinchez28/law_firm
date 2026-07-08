@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import ThemeContext from '@/core/store/ThemeContext';
 import {
+  getSystemTheme,
   getThemeStorageKey,
   isValidTheme,
   persistLastActiveTheme,
@@ -15,11 +16,20 @@ const ThemeProvider = ({ children, user, role }) => {
   );
 
   const followsLastActiveTheme = useMemo(
-    () => ['auth', 'public'].includes(String(role || '').toLowerCase()),
+    () => String(role || '').toLowerCase() === 'auth',
+    [role],
+  );
+
+  const followsSystemTheme = useMemo(
+    () => String(role || '').toLowerCase() === 'public',
     [role],
   );
 
   const resolveInitialTheme = () => {
+    if (followsSystemTheme) {
+      return getSystemTheme();
+    }
+
     const storedTheme = localStorage.getItem(storageKey);
     const lastActiveTheme = readLastActiveTheme();
 
@@ -31,7 +41,7 @@ const ThemeProvider = ({ children, user, role }) => {
       return storedTheme;
     }
 
-    return lastActiveTheme || 'light';
+    return lastActiveTheme || getSystemTheme();
   };
 
   /*
@@ -57,6 +67,25 @@ const ThemeProvider = ({ children, user, role }) => {
       setTheme(resolveInitialTheme());
     }
   }, [storageKey]);
+
+  useEffect(() => {
+    if (!followsSystemTheme) return undefined;
+
+    setTheme(getSystemTheme());
+
+    const media = window.matchMedia?.('(prefers-color-scheme: dark)');
+    if (!media) return undefined;
+
+    const handleSystemThemeChange = (event) => {
+      setTheme(event.matches ? 'dark' : 'light');
+    };
+
+    media.addEventListener?.('change', handleSystemThemeChange);
+
+    return () => {
+      media.removeEventListener?.('change', handleSystemThemeChange);
+    };
+  }, [followsSystemTheme]);
 
   /*
     Apply theme to DOM + persist

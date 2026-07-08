@@ -11,12 +11,19 @@ import StatsCard from '@/components/ui/StatsCard';
 import SectionHeading from '@/components/ui/SectionHeading';
 import { Input3D } from '@/components/ui/Input3D';
 import Button3D from '@/components/ui/Button3D';
+import useSecretaryDashboard from '@/modules/staff/secretary/dashboard/hooks/useSecretaryDashboard';
+
+const hasPermission = (permissions, permission) =>
+  permissions.map((item) => String(item).toUpperCase()).includes(permission);
 
 export default function SecretaryClients() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
 
   const { clients = [], loading, refetch } = useSecretaryClients();
+  const { data: dashboardData } = useSecretaryDashboard();
+  const permissions = dashboardData?.permissions || [];
+  const canManageClients = hasPermission(permissions, 'MANAGE_CLIENTS');
 
   const filteredClients = useMemo(() => {
     if (!search.trim()) return clients;
@@ -63,7 +70,18 @@ export default function SecretaryClients() {
           subtitle='Official clients represented by the firm'
         />
 
-        <Button3D onClick={refetch}>Refresh</Button3D>
+        <div className='flex flex-wrap gap-3'>
+          <Button3D onClick={refetch}>Refresh</Button3D>
+
+          {canManageClients && (
+            <Button3D
+              variant='primary'
+              onClick={() => navigate('/secretary/clients/create')}
+            >
+              + Create Client
+            </Button3D>
+          )}
+        </div>
       </div>
 
       <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>

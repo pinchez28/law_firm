@@ -47,6 +47,14 @@ export const LAST_ACTIVE_THEME_KEY = 'theme-last-active';
 
 export const isValidTheme = (theme) => ['light', 'dark'].includes(theme);
 
+export const getSystemTheme = () => {
+  if (typeof window === 'undefined') return 'light';
+
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light';
+};
+
 export const readLastActiveTheme = () => {
   try {
     const theme = localStorage.getItem(LAST_ACTIVE_THEME_KEY);
@@ -63,5 +71,16 @@ export const persistLastActiveTheme = (theme) => {
     localStorage.setItem(LAST_ACTIVE_THEME_KEY, theme);
   } catch {
     // Ignore storage failures so theme switching never breaks navigation.
+  }
+};
+
+export const persistThemeForUser = ({ role, user, theme }) => {
+  if (!isValidTheme(theme)) return;
+
+  try {
+    localStorage.setItem(getThemeStorageKey({ role, user }), theme);
+    persistLastActiveTheme(theme);
+  } catch {
+    // Ignore storage failures so auth and routing stay uninterrupted.
   }
 };
