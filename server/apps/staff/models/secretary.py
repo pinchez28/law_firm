@@ -48,6 +48,20 @@ class Secretary(TimestampedModel):
     )
 
     department = models.CharField(max_length=100, blank=True, null=True)
+    branch = models.ForeignKey(
+        "firm.Branch",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="secretaries",
+    )
+    department_unit = models.ForeignKey(
+        "firm.Department",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="secretaries",
+    )
     job_title = models.CharField(max_length=100, default="Secretary")
     work_email = models.EmailField(unique=True, blank=True, null=True)
     work_phone = models.CharField(max_length=20, blank=True, null=True)

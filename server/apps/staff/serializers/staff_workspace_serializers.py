@@ -6,6 +6,7 @@ class StaffWorkspaceDashboardSerializer(serializers.Serializer):
     summary = serializers.DictField()
     permissions = serializers.ListField(child=serializers.CharField())
     default_work = serializers.DictField()
+    system_health = serializers.DictField(required=False)
     recent_activity = serializers.ListField(child=serializers.DictField())
 
 

@@ -2,6 +2,7 @@ from datetime import date
 
 from rest_framework import serializers
 
+from apps.firm.services.it_department_service import ITDepartmentService
 from apps.staff.models import IT, ITPermission
 
 
@@ -26,9 +27,20 @@ class AdminITDetailSerializer(serializers.ModelSerializer):
 
     def get_analytics(self, obj):
         tenure_days = (date.today() - obj.date_hired).days if obj.date_hired else None
+        it_department = ITDepartmentService.get_it_department(obj.law_firm)
         return {
             "tenure_days": tenure_days,
             "active_permissions": obj.permissions.filter(is_active=True).count(),
+            "it_management": {
+                "source": "it_department" if it_department else "admin_fallback",
+                "department_id": str(it_department.id) if it_department else None,
+                "department_name": it_department.name if it_department else None,
+                "message": (
+                    "IT matters are handled by the IT department."
+                    if it_department
+                    else "No IT department exists, so admin handles IT matters."
+                ),
+            },
             "default_work": {
                 "can_manage_users": obj.can_manage_users,
                 "can_manage_system_settings": obj.can_manage_system_settings,

@@ -12,10 +12,25 @@ class CaseService:
     def get_user_firm(user):
         if user.role == UserRole.ADMIN and hasattr(user, "owned_firm"):
             return user.owned_firm
-        if hasattr(user, "lawyer_profile"):
-            return user.lawyer_profile.law_firm
-        if hasattr(user, "secretary_profile"):
-            return user.secretary_profile.law_firm
+        membership = (
+            user.firm_memberships.filter(is_active=True)
+            .select_related("firm")
+            .first()
+            if hasattr(user, "firm_memberships")
+            else None
+        )
+        if membership:
+            return membership.firm
+        for profile_name in [
+            "lawyer_profile",
+            "secretary_profile",
+            "it_profile",
+            "accountant_profile",
+            "hr_profile",
+        ]:
+            profile = getattr(user, profile_name, None)
+            if profile is not None:
+                return profile.law_firm
         if hasattr(user, "client_profile"):
             return user.client_profile.firm
         raise PermissionError("User is not attached to a law firm.")
@@ -37,6 +52,8 @@ class CaseService:
             .prefetch_related("timeline", "activities")
         )
 
+        if user.role == UserRole.ADMIN:
+            return queryset
         if hasattr(user, "lawyer_profile"):
             queryset = queryset.filter(assigned_lawyer=user.lawyer_profile)
         elif hasattr(user, "secretary_profile"):
@@ -89,6 +106,56 @@ class CaseService:
         return Secretary.objects.get(id=secretary_id, law_firm=firm, is_active=True)
 
     @staticmethod
+    def get_default_lawyer(firm):
+        owner_lawyer = getattr(firm.owner, "lawyer_profile", None)
+        if (
+            owner_lawyer is not None
+            and owner_lawyer.law_firm_id == firm.id
+            and owner_lawyer.is_active
+        ):
+            return owner_lawyer
+        raise PermissionError(
+            "The firm owner must be registered as a lawyer before cases can use the default lawyer assignment."
+        )
+
+    @staticmethod
+    def get_default_lawyer_for_user(firm, user):
+        user_lawyer = getattr(user, "lawyer_profile", None)
+        if (
+            user.role == UserRole.ADMIN
+            and user_lawyer is not None
+            and user_lawyer.law_firm_id == firm.id
+            and user_lawyer.is_active
+        ):
+            return user_lawyer
+        return CaseService.get_default_lawyer(firm)
+
+    @staticmethod
+    def get_default_secretary(firm):
+        return (
+            Secretary.objects.filter(law_firm=firm, is_active=True)
+            .order_by("date_hired", "created_at")
+            .first()
+        )
+
+    @staticmethod
+    def get_case_assignments(firm, user, *, lawyer_id=None, secretary_id=None):
+        if user.role == UserRole.ADMIN:
+            assigned_lawyer = (
+                CaseService.resolve_lawyer(firm, lawyer_id)
+                if lawyer_id
+                else CaseService.get_default_lawyer_for_user(firm, user)
+            )
+            assigned_secretary = (
+                CaseService.resolve_secretary(firm, secretary_id)
+                if secretary_id
+                else CaseService.get_default_secretary(firm)
+            )
+            return assigned_lawyer, assigned_secretary
+
+        return CaseService.get_default_lawyer_for_user(firm, user), CaseService.get_default_secretary(firm)
+
+    @staticmethod
     def record_activity(case, *, action, description="", actor=None, metadata=None):
         CaseTimeline.objects.create(
             case=case,
@@ -115,8 +182,12 @@ class CaseService:
         )
         lawyer_id = validated_data.pop("assigned_lawyer_membership_id", None)
         secretary_id = validated_data.pop("assigned_secretary_membership_id", None)
-        assigned_lawyer = CaseService.resolve_lawyer(firm, lawyer_id)
-        assigned_secretary = CaseService.resolve_secretary(firm, secretary_id)
+        assigned_lawyer, assigned_secretary = CaseService.get_case_assignments(
+            firm,
+            user,
+            lawyer_id=lawyer_id,
+            secretary_id=secretary_id,
+        )
 
         case_number = (validated_data.pop("case_number", "") or "").strip()
         if not case_number:

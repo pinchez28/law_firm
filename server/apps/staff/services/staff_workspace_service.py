@@ -1,3 +1,7 @@
+from apps.firm.services.it_department_service import ITDepartmentService
+from apps.firm.services.it_system_report_service import ITSystemReportService
+
+
 class StaffWorkspaceService:
     @staticmethod
     def get_profile(user, profile_attr, role_label):
@@ -24,6 +28,20 @@ class StaffWorkspaceService:
         permissions = list(
             profile.permissions.filter(is_active=True).values_list("code", flat=True)
         )
+        it_department = (
+            ITDepartmentService.get_it_department(profile.law_firm)
+            if profile.firm_role == "IT"
+            else None
+        )
+        it_management = None
+        if profile.firm_role == "IT":
+            system_report = ITSystemReportService.build_report(profile.law_firm)
+            it_management = {
+                **system_report["ownership"],
+                "overall_health_percentage": system_report["overall_health_percentage"],
+                "status": system_report["status"],
+            }
+
         return {
             "profile": {
                 "id": str(profile.id),
@@ -38,9 +56,11 @@ class StaffWorkspaceService:
                 "pending_tasks": 0,
                 "documents": 0,
                 "notifications": 0,
+                **({"it_management": it_management} if it_management else {}),
             },
             "permissions": permissions,
             "default_work": default_work(profile),
+            **({"system_health": system_report} if profile.firm_role == "IT" else {}),
             "recent_activity": [
                 {
                     "id": "activity-001",

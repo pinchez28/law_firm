@@ -32,6 +32,10 @@ class AdminSecretaryCreateService:
         if not staff_number:
             staff_number = AdminSecretaryNumberService.generate_staff_number(law_firm)
 
+        department_unit = validated_data.get("department_unit")
+        if department_unit is not None and not validated_data.get("department"):
+            validated_data["department"] = department_unit.name
+
         secretary = Secretary.objects.create(
             user=user,
             law_firm=law_firm,

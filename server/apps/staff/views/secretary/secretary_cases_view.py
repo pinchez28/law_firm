@@ -1,6 +1,10 @@
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework.response import Response
 
+from apps.cases.serializers import CaseCreateSerializer, CaseDetailSerializer
+from apps.cases.services import CaseService
+from apps.staff.models import SecretaryPermission
 from apps.staff.serializers.secretary import SecretaryCaseSerializer
 from apps.staff.services.secretary import SecretaryCaseService
 from apps.staff.views.secretary.secretary_base_view import SecretaryBaseView
@@ -25,3 +29,31 @@ class SecretaryCasesView(SecretaryBaseView):
 
         serializer = SecretaryCaseSerializer(cases, many=True)
         return Response({"cases": serializer.data}, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        try:
+            secretary = self.get_secretary()
+            if not secretary.has_permission(SecretaryPermission.MANAGE_CASES):
+                return Response(
+                    {"detail": "Admin permission is required to manage cases."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            serializer = CaseCreateSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            case = CaseService.create_case(
+                user=request.user,
+                validated_data=serializer.validated_data,
+            )
+        except ObjectDoesNotExist:
+            return Response(
+                {"detail": "Selected client was not found."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except PermissionError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_403_FORBIDDEN)
+
+        return Response(
+            {"case": CaseDetailSerializer(case).data},
+            status=status.HTTP_201_CREATED,
+        )

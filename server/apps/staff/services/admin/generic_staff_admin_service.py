@@ -85,6 +85,10 @@ class GenericStaffAdminService:
                 prefix=staff_number_prefix,
             )
 
+        department_unit = validated_data.get("department_unit")
+        if department_unit is not None and not validated_data.get("department"):
+            validated_data["department"] = department_unit.name
+
         staff = model.objects.create(
             user=user,
             law_firm=law_firm,

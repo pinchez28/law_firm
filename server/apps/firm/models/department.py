@@ -43,6 +43,15 @@ class Department(TimestampedModel):
         blank=True,
     )
 
+    head = models.ForeignKey(
+        "users.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="headed_departments",
+        help_text="Staff member responsible for this department.",
+    )
+
     is_active = models.BooleanField(
         default=True,
     )

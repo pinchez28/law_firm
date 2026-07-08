@@ -8,15 +8,7 @@ from apps.firm.models import LawFirmMember
 class AuthService:
 
     @staticmethod
-    def login_user(email: str, password: str):
-        user = authenticate(
-            username=email,
-            password=password,
-        )
-
-        if not user:
-            return None, "Invalid credentials"
-
+    def get_active_membership(user):
         membership = (
             LawFirmMember.objects
             .select_related("firm")
@@ -26,19 +18,48 @@ class AuthService:
             )
             .first()
         )
+        return membership
+
+    @staticmethod
+    def build_session_payload(user):
+        membership = AuthService.get_active_membership(user)
 
         firm = membership.firm if membership else None
         firm_role = membership.role if membership else None
 
+        return {
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "full_name": f"{user.first_name} {user.last_name}",
+                "role": user.role,
+                "firm_role": firm_role,
+                "must_change_password": user.must_change_password,
+            },
+            "firm": {
+                "id": firm.id if firm else None,
+                "name": firm.name if firm else None,
+            },
+            "firm_role": firm_role,
+        }
+
+    @staticmethod
+    def login_user(email: str, password: str):
+        user = authenticate(
+            username=email,
+            password=password,
+        )
+
+        if not user:
+            return None, "Invalid credentials"
+
         refresh = RefreshToken.for_user(user)
+        session_payload = AuthService.build_session_payload(user)
 
         return {
-            "user": user,
             "access": str(refresh.access_token),
             "refresh": str(refresh),
-            "role": user.role,
-            "firm": firm,
-            "firm_role": firm_role,
+            **session_payload,
         }, None
     
     @staticmethod

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from apps.common.choices import EmploymentType
+from apps.firm.models import Branch, Department
 from apps.staff.models import Lawyer, Secretary, SecretaryPermission
 from apps.users.models import User
 
@@ -27,6 +28,16 @@ class AdminSecretaryCreateSerializer(serializers.ModelSerializer):
         required=False,
         write_only=True,
     )
+    branch = serializers.PrimaryKeyRelatedField(
+        queryset=Branch.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    department_unit = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.all(),
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = Secretary
@@ -39,6 +50,8 @@ class AdminSecretaryCreateSerializer(serializers.ModelSerializer):
             "staff_number",
             "employee_number",
             "department",
+            "branch",
+            "department_unit",
             "job_title",
             "work_email",
             "work_phone",
@@ -84,10 +97,27 @@ class AdminSecretaryCreateSerializer(serializers.ModelSerializer):
         law_firm = self.context.get("law_firm")
         reports_to = attrs.get("reports_to")
         assigned_lawyers = attrs.get("assigned_lawyer_ids", [])
+        branch = attrs.get("branch")
+        department_unit = attrs.get("department_unit")
 
         if reports_to and law_firm and reports_to.law_firm_id != law_firm.id:
             raise serializers.ValidationError(
                 {"reports_to": "Reporting lawyer must belong to the same law firm."}
+            )
+
+        if branch and law_firm and branch.firm_id != law_firm.id:
+            raise serializers.ValidationError(
+                {"branch": "Branch must belong to the same law firm."}
+            )
+
+        if department_unit and law_firm and department_unit.firm_id != law_firm.id:
+            raise serializers.ValidationError(
+                {"department_unit": "Department must belong to the same law firm."}
+            )
+
+        if department_unit and branch and department_unit.branch_id not in [None, branch.id]:
+            raise serializers.ValidationError(
+                {"department_unit": "Department must belong to the selected branch."}
             )
 
         for lawyer in assigned_lawyers:

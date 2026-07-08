@@ -4,15 +4,14 @@ from django.db import transaction
 from apps.users.models import User
 from apps.firm.models import (
     LawFirm,
-    Branch,
-    Department,
-    PracticeArea,
     LawFirmMember,
     FirmSetting,
 )
-from apps.staff.models.staff import Staff
+from apps.staff.models.lawyer import Lawyer, LawyerPermission
 from apps.common.choices import FirmRole
-from apps.firm.services.law_firm_service import LawFirmService
+from apps.staff.services.admin.lawyers.admin_lawyer_permission_service import (
+    AdminLawyerPermissionService,
+)
 
 
 # =========================================================
@@ -34,33 +33,10 @@ FIRM_DATA = {
         "description": "Full-service commercial law firm",
     },
 
-    "branches": [
-        {
-            "name": "Nairobi Head Office",
-            "code": "NBO-001",
-            "email": "nairobi@primelaw.com",
-            "phone_number": "+254700000000",
-            "physical_address": "Nairobi CBD",
-            "postal_address": "00100 Nairobi",
-            "is_head_office": True,
-        }
-    ],
-
-    "departments": [
-        {"name": "Litigation", "description": ""},
-        {"name": "Corporate", "description": ""},
-        {"name": "Finance", "description": ""},
-    ],
-
-    "practice_areas": [
-        {"name": "Criminal Law"},
-        {"name": "Commercial Law"},
-        {"name": "Employment Law"},
-    ],
-
     "staff": {
         "staff_number": "ADM001",
         "job_title": "Managing Partner",
+        "admission_number": "OWNER-ADV-001",
     }
 }
 
@@ -85,78 +61,29 @@ def run():
         )
 
     # -----------------------------------------------------
-    # 2. Idempotency guard
+    # 2. Create or reuse firm
     # -----------------------------------------------------
-    if LawFirm.objects.filter(owner=owner).exists():
-        print("⚠️ Firm already exists. Skipping bootstrap.")
-        return
-
-    # -----------------------------------------------------
-    # 3. Create firm (single source of truth)
-    # -----------------------------------------------------
-    firm = LawFirmService.create_firm(
-        owner=owner,
-        validated_data=FIRM_DATA["firm"],
-    )
-
-    # -----------------------------------------------------
-    # 4. Create or get branches
-    # -----------------------------------------------------
-    branch_map = {}
-
-    for b in FIRM_DATA["branches"]:
-        branch, _ = Branch.objects.get_or_create(
-            firm=firm,
-            name=b["name"],
-            defaults=b,
-        )
-        branch_map[b["name"]] = branch
-
-    # -----------------------------------------------------
-    # 5. Identify head office
-    # -----------------------------------------------------
-    head_office = next(
-        (b for b in branch_map.values() if b.is_head_office),
-        None
-    )
-
-    if not head_office:
-        raise Exception("No head office branch defined. At least one branch must have is_head_office=True.")
-
-    # -----------------------------------------------------
-    # 6. Create or get departments
-    # -----------------------------------------------------
-    for d in FIRM_DATA["departments"]:
-        Department.objects.get_or_create(
-            firm=firm,
-            name=d["name"],
-            defaults={
-                **d,
-                "branch": head_office,
-            },
+    existing_firm = LawFirm.objects.filter(owner=owner).first()
+    if existing_firm:
+        firm = existing_firm
+        print("Firm already exists. Reusing it and syncing bootstrap essentials.")
+    else:
+        firm = LawFirm.objects.create(
+            owner=owner,
+            **FIRM_DATA["firm"],
         )
 
     # -----------------------------------------------------
-    # 7. Create or get practice areas
-    # -----------------------------------------------------
-    for p in FIRM_DATA["practice_areas"]:
-        PracticeArea.objects.get_or_create(
-            firm=firm,
-            name=p["name"],
-            defaults=p,
-        )
-
-    # -----------------------------------------------------
-    # 8. Firm settings (OneToOne safe)
+    # 4. Firm settings (OneToOne safe)
     # -----------------------------------------------------
     FirmSetting.objects.get_or_create(
         firm=firm
     )
 
     # -----------------------------------------------------
-    # 9. Firm membership (idempotent)
+    # 5. Firm membership (idempotent)
     # -----------------------------------------------------
-    LawFirmMember.objects.get_or_create(
+    LawFirmMember.objects.update_or_create(
         firm=firm,
         user=owner,
         defaults={
@@ -167,23 +94,29 @@ def run():
     )
 
     # -----------------------------------------------------
-    # 10. Staff profile (idempotent)
+    # 6. Owner lawyer profile (idempotent)
     # -----------------------------------------------------
-    Staff.objects.get_or_create(
+    owner_lawyer, _ = Lawyer.objects.get_or_create(
         user=owner,
         law_firm=firm,
         defaults={
             "staff_number": FIRM_DATA["staff"]["staff_number"],
             "firm_role": FirmRole.LAWYER,
             "job_title": FIRM_DATA["staff"]["job_title"],
+            "admission_number": FIRM_DATA["staff"]["admission_number"],
             "date_hired": date.today(),
         },
+    )
+    AdminLawyerPermissionService.sync_permissions(
+        lawyer=owner_lawyer,
+        permission_codes=[code for code, _ in LawyerPermission.choices],
+        granted_by=owner,
     )
 
     # -----------------------------------------------------
     # 11. Output summary
     # -----------------------------------------------------
-    print("\n✅ ===== FIRM BOOTSTRAP COMPLETE =====")
+    print("\n===== FIRM BOOTSTRAP COMPLETE =====")
     print(f"Firm: {firm.name}")
     print(f"Owner: {owner.email}")
     print(f"Branches: {firm.branches.count()}")

@@ -31,25 +31,10 @@ class LoginView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        user = result["user"]
-        firm = result["firm"]
-
         return Response({
             "access": result["access"],
             "refresh": result["refresh"],
-
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "full_name": f"{user.first_name} {user.last_name}",
-                "role": result["role"],
-                "must_change_password": user.must_change_password,
-            },
-
-            "firm": {
-                "id": firm.id if firm else None,
-                "name": firm.name if firm else None,
-            },
-
+            "user": result["user"],
+            "firm": result["firm"],
             "firm_role": result["firm_role"],
         }, status=status.HTTP_200_OK)

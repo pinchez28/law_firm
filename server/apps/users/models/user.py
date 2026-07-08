@@ -83,7 +83,12 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
 
     @property
     def full_name(self):
-        return f"{self.first_name} {self.last_name}".strip()
+        name_parts = [
+            part
+            for part in [self.first_name, self.last_name]
+            if part and part.strip() not in {"-"}
+        ]
+        return " ".join(name_parts).strip()
 
     @property
     def is_admin(self):

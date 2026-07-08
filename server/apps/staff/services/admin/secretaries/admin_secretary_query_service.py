@@ -13,6 +13,7 @@ class AdminSecretaryQueryService:
             .prefetch_related(
                 "assigned_lawyers",
                 "assigned_lawyers__user",
+                "assigned_cases",
                 "permissions",
             )
         )

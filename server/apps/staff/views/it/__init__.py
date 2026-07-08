@@ -4,6 +4,9 @@ from apps.staff.views.staff_workspace_views import (
     StaffWorkspaceItemsView,
     StaffWorkspaceProfileView,
 )
+from apps.firm.services.it_system_report_service import ITSystemReportService
+from rest_framework import status
+from rest_framework.response import Response
 
 
 class ITProfileView(StaffWorkspaceProfileView):
@@ -62,6 +65,21 @@ class ITSystemsView(StaffWorkspaceItemsView):
     role_label = "IT"
     item_type = "system"
     response_key = "systems"
+
+    def get(self, request):
+        try:
+            profile = self.get_profile()
+        except ValueError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_403_FORBIDDEN)
+
+        report = ITSystemReportService.build_report(profile.law_firm)
+        return Response(
+            {
+                "systems": report["dashboards"],
+                "report": report,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 __all__ = [

@@ -24,6 +24,7 @@ class AdminDepartmentDetailView(AdminFirmBaseView):
             department,
             data=request.data,
             partial=True,
+            context={"firm": department.firm},
         )
         serializer.is_valid(raise_exception=True)
 

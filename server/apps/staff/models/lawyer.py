@@ -71,6 +71,22 @@ class Lawyer(TimestampedModel):
         null=True,
     )
 
+    branch = models.ForeignKey(
+        "firm.Branch",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="lawyers",
+    )
+
+    department_unit = models.ForeignKey(
+        "firm.Department",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="lawyers",
+    )
+
     job_title = models.CharField(
         max_length=100,
         default="Lawyer",

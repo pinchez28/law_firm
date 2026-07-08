@@ -19,7 +19,7 @@ class AdminDepartmentListView(AdminFirmBaseView):
 
     def post(self, request):
         firm = self.get_firm()
-        serializer = DepartmentWriteSerializer(data=request.data)
+        serializer = DepartmentWriteSerializer(data=request.data, context={"firm": firm})
         serializer.is_valid(raise_exception=True)
 
         if firm.departments.filter(

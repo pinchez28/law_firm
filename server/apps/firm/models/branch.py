@@ -55,6 +55,15 @@ class Branch(TimestampedModel):
         blank=True,
     )
 
+    branch_leader = models.ForeignKey(
+        "users.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="led_branches",
+        help_text="Staff member responsible for this branch. Defaults to the firm owner.",
+    )
+
     is_head_office = models.BooleanField(
         default=False,
         help_text="Indicates whether this is the firm's main office.",

@@ -1,13 +1,12 @@
 from rest_framework import status
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.common.choices import UserRole
 from apps.staff.services.admin.generic_staff_admin_service import (
     GenericStaffAdminService,
 )
+from apps.staff.views.admin.admin_firm_resolver import get_admin_law_firm
 
 
 class GenericAdminStaffBaseView(APIView):
@@ -28,12 +27,7 @@ class GenericAdminStaffBaseView(APIView):
     not_found_message = "Staff member not found."
 
     def get_law_firm(self):
-        user = self.request.user
-        if user.role != UserRole.ADMIN:
-            raise PermissionDenied("Only admins can manage staff.")
-        if hasattr(user, "owned_firm"):
-            return user.owned_firm
-        raise PermissionDenied("Admin is not attached to a law firm.")
+        return get_admin_law_firm(self.request.user)
 
     def get_staff(self, staff_id):
         return GenericStaffAdminService.get_staff(
