@@ -6,6 +6,7 @@ from .admin_lawyer_delete_view import AdminLawyerDeleteView
 from .admin_lawyer_activate_view import AdminLawyerActivateView
 from .admin_lawyer_deactivate_view import AdminLawyerDeactivateView
 from .admin_lawyer_change_status_view import AdminLawyerChangeStatusView
+from .admin_lawyer_permission_view import AdminLawyerPermissionView
 
 __all__ = [
     "AdminLawyerListView",
@@ -16,4 +17,5 @@ __all__ = [
     "AdminLawyerActivateView",
     "AdminLawyerDeactivateView",
     "AdminLawyerChangeStatusView",
+    "AdminLawyerPermissionView",
 ]

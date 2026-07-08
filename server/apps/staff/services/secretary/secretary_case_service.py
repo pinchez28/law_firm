@@ -1,4 +1,5 @@
 from apps.staff.models import SecretaryPermission
+from apps.cases.services import CaseService
 
 
 class SecretaryCaseService:
@@ -11,15 +12,11 @@ class SecretaryCaseService:
         if not secretary.has_permission(SecretaryPermission.MANAGE_CASES):
             raise PermissionError("Admin permission is required to manage cases.")
 
-        return [
-            {
-                "id": "case-001",
-                "title": "Sample matter filing",
-                "case_number": "SC-2026-001",
-                "status": "OPEN",
-                "client_name": "Sample Client",
-                "assigned_lawyer": "Assigned Lawyer",
-                "next_action": "Prepare filing documents",
-                "last_updated": "2026-07-06T00:00:00Z",
-            }
-        ]
+        return CaseService.list_cases(user)
+
+    @classmethod
+    def get_case(cls, user, case_id):
+        try:
+            return CaseService.get_case(user, case_id)
+        except Exception:
+            return None

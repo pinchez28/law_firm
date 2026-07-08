@@ -6,6 +6,9 @@ from apps.staff.serializers.admin.secretaries import (
     AdminSecretaryDetailSerializer,
 )
 from apps.staff.services.admin.secretaries import AdminSecretaryCreateService
+from apps.staff.services.admin.secretaries.admin_secretary_query_service import (
+    AdminSecretaryQueryService,
+)
 from apps.staff.views.admin.secretaries.admin_secretary_base_view import (
     AdminSecretaryBaseView,
 )
@@ -24,6 +27,10 @@ class AdminSecretaryCreateView(AdminSecretaryBaseView):
             law_firm=law_firm,
             validated_data=serializer.validated_data,
             created_by=request.user,
+        )
+        secretary = AdminSecretaryQueryService.get_secretary(
+            secretary_id=secretary.id,
+            law_firm=law_firm,
         )
 
         return Response(

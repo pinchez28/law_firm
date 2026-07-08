@@ -10,6 +10,9 @@ from apps.staff.serializers.admin.lawyers.admin_lawyer_detail_serializer import 
 from apps.staff.services.admin.lawyers.admin_lawyer_create_service import (
     AdminLawyerCreateService,
 )
+from apps.staff.services.admin.lawyers.admin_lawyer_query_service import (
+    AdminLawyerQueryService,
+)
 from apps.staff.views.admin.lawyers.admin_lawyer_base_view import (
     AdminLawyerBaseView,
 )
@@ -29,6 +32,10 @@ class AdminLawyerCreateView(AdminLawyerBaseView):
             law_firm=law_firm,
             validated_data=serializer.validated_data,
             created_by=request.user,
+        )
+        lawyer = AdminLawyerQueryService.get_lawyer(
+            lawyer_id=lawyer.id,
+            law_firm=law_firm,
         )
 
         return Response(

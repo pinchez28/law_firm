@@ -2,7 +2,7 @@ from datetime import date
 
 from rest_framework import serializers
 
-from apps.staff.models.lawyer import Lawyer
+from apps.staff.models.lawyer import Lawyer, LawyerPermission
 
 
 class AdminLawyerDetailSerializer(serializers.ModelSerializer):
@@ -22,8 +22,18 @@ class AdminLawyerDetailSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     practice_areas = serializers.StringRelatedField(many=True, read_only=True)
-
+    permissions = serializers.SerializerMethodField()
+    available_permissions = serializers.SerializerMethodField()
     analytics = serializers.SerializerMethodField()
+
+    def get_permissions(self, obj):
+        permissions = getattr(obj, "permissions", None)
+        if permissions is None:
+            return []
+        return list(permissions.filter(is_active=True).values_list("code", flat=True))
+
+    def get_available_permissions(self, obj):
+        return [{"code": code, "label": label} for code, label in LawyerPermission.choices]
 
     def get_analytics(self, obj):
         today = date.today()
@@ -117,6 +127,8 @@ class AdminLawyerDetailSerializer(serializers.ModelSerializer):
             "termination_reason",
             "professional_summary",
             "is_active",
+            "permissions",
+            "available_permissions",
             "created_at",
             "updated_at",
             "analytics",

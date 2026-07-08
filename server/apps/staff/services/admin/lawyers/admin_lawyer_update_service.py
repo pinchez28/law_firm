@@ -1,5 +1,9 @@
 from django.db import transaction
 
+from apps.staff.services.admin.lawyers.admin_lawyer_permission_service import (
+    AdminLawyerPermissionService,
+)
+
 
 class AdminLawyerUpdateService:
     """
@@ -25,6 +29,7 @@ class AdminLawyerUpdateService:
 
         # Lawyer fields
         practice_areas = validated_data.pop("practice_area_ids", None)
+        permission_codes = validated_data.pop("permission_codes", None)
 
         for field, value in validated_data.items():
             setattr(lawyer, field, value)
@@ -33,5 +38,12 @@ class AdminLawyerUpdateService:
 
         if practice_areas is not None:
             lawyer.practice_areas.set(practice_areas)
+
+        if permission_codes is not None:
+            AdminLawyerPermissionService.sync_permissions(
+                lawyer=lawyer,
+                permission_codes=permission_codes,
+                granted_by=updated_by,
+            )
 
         return lawyer

@@ -7,6 +7,21 @@ from apps.common.choices import EmploymentStatus, EmploymentType, FirmRole
 from apps.common.models.timestamped_model import TimestampedModel
 
 
+class LawyerPermission(models.TextChoices):
+    MANAGE_ASSIGNED_CASES = "MANAGE_ASSIGNED_CASES", "Manage Assigned Cases"
+    CREATE_CASES = "CREATE_CASES", "Create Cases"
+    MANAGE_CASE_DOCUMENTS = "MANAGE_CASE_DOCUMENTS", "Manage Case Documents"
+    SCHEDULE_HEARINGS = "SCHEDULE_HEARINGS", "Schedule Hearings"
+    MANAGE_CLIENT_COMMUNICATIONS = (
+        "MANAGE_CLIENT_COMMUNICATIONS",
+        "Manage Client Communications",
+    )
+    USE_LEGAL_RESEARCH = "USE_LEGAL_RESEARCH", "Use Legal Research"
+    USE_AI_TOOLS = "USE_AI_TOOLS", "Use AI Tools"
+    APPROVE_DOCUMENTS = "APPROVE_DOCUMENTS", "Approve Documents"
+    VIEW_BILLING = "VIEW_BILLING", "View Billing"
+
+
 class Lawyer(TimestampedModel):
     """
     Represents a lawyer employed by the law firm.
@@ -189,5 +204,42 @@ class Lawyer(TimestampedModel):
         self.full_clean()
         return super().save(*args, **kwargs)
 
+    def has_permission(self, code):
+        return self.permissions.filter(code=code, is_active=True).exists()
+
     def __str__(self):
         return f"{self.user.full_name} - Lawyer"
+
+
+class LawyerPermissionGrant(TimestampedModel):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+    lawyer = models.ForeignKey(
+        Lawyer,
+        on_delete=models.CASCADE,
+        related_name="permissions",
+    )
+    code = models.CharField(max_length=50, choices=LawyerPermission.choices)
+    is_active = models.BooleanField(default=True)
+    granted_by = models.ForeignKey(
+        "users.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="granted_lawyer_permissions",
+    )
+
+    class Meta:
+        db_table = "staff_lawyer_permissions"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["lawyer", "code"],
+                name="unique_lawyer_permission",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.lawyer} - {self.code}"

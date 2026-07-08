@@ -4,6 +4,7 @@ from .admin_lawyer_create_service import AdminLawyerCreateService
 from .admin_lawyer_update_service import AdminLawyerUpdateService
 from .admin_lawyer_status_service import AdminLawyerStatusService
 from .admin_lawyer_delete_service import AdminLawyerDeleteService
+from .admin_lawyer_permission_service import AdminLawyerPermissionService
 
 __all__ = [
     "AdminLawyerQueryService",
@@ -12,4 +13,5 @@ __all__ = [
     "AdminLawyerUpdateService",
     "AdminLawyerStatusService",
     "AdminLawyerDeleteService",
+    "AdminLawyerPermissionService",
 ]

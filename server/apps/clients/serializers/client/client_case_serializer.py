@@ -1,8 +1,7 @@
 from rest_framework import serializers
 
+from apps.cases.serializers.case_detail_serializer import CaseDetailSerializer
 
-class ClientCaseSerializer(serializers.Serializer):
-    id = serializers.CharField(read_only=True)
-    title = serializers.CharField(read_only=True)
-    status = serializers.CharField(read_only=True)
-    last_updated = serializers.CharField(read_only=True)
+
+class ClientCaseSerializer(CaseDetailSerializer):
+    pass

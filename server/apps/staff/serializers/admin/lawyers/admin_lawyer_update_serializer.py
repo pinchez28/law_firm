@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from apps.common.choices import EmploymentStatus, EmploymentType
 from apps.firm.models.practice_area import PracticeArea
-from apps.staff.models.lawyer import Lawyer
+from apps.staff.models.lawyer import Lawyer, LawyerPermission
 
 
 class AdminLawyerUpdateSerializer(serializers.ModelSerializer):
@@ -13,6 +13,11 @@ class AdminLawyerUpdateSerializer(serializers.ModelSerializer):
     practice_area_ids = serializers.PrimaryKeyRelatedField(
         queryset=PracticeArea.objects.all(),
         many=True,
+        required=False,
+        write_only=True,
+    )
+    permission_codes = serializers.MultipleChoiceField(
+        choices=LawyerPermission.choices,
         required=False,
         write_only=True,
     )
@@ -36,6 +41,7 @@ class AdminLawyerUpdateSerializer(serializers.ModelSerializer):
             "is_notary",
             "can_commission_oaths",
             "is_court_approved",
+            "permission_codes",
             "employment_type",
             "employment_status",
             "date_hired",

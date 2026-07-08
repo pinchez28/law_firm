@@ -1,18 +1,25 @@
+from apps.cases.models import Case
+
+
 class ClientCaseService:
     @staticmethod
     def list_cases(client):
-        return [
-            {
-                "id": "22222222-2222-2222-2222-222222222222",
-                "title": "Estate administration",
-                "status": "OPEN",
-                "last_updated": "2026-07-05",
-            }
-        ]
+        return (
+            Case.objects.filter(client=client, firm=client.firm)
+            .select_related(
+                "client",
+                "assigned_lawyer",
+                "assigned_lawyer__user",
+                "assigned_secretary",
+                "assigned_secretary__user",
+            )
+            .prefetch_related("timeline", "activities")
+            .order_by("-created_at")
+        )
 
     @classmethod
     def get_case(cls, client, case_id):
-        for case in cls.list_cases(client):
-            if str(case["id"]) == str(case_id):
-                return case
-        return None
+        try:
+            return cls.list_cases(client).get(id=case_id)
+        except Case.DoesNotExist:
+            return None

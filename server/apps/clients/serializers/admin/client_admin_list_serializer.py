@@ -11,6 +11,7 @@ class ClientAdminListSerializer(serializers.ModelSerializer):
             "full_name",
             "email",
             "phone_number",
+            "national_id",
             "client_type",
             "access_type",
             "lifecycle_status",

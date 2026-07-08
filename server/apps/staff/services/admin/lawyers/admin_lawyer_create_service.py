@@ -6,6 +6,9 @@ from apps.staff.models.lawyer import Lawyer
 from apps.staff.services.admin.lawyers.admin_lawyer_number_service import (
     AdminLawyerNumberService,
 )
+from apps.staff.services.admin.lawyers.admin_lawyer_permission_service import (
+    AdminLawyerPermissionService,
+)
 from apps.users.services.auth_service import AuthService
 
 
@@ -23,6 +26,7 @@ class AdminLawyerCreateService:
     @transaction.atomic
     def create_lawyer(*, law_firm, validated_data, created_by):
         practice_areas = validated_data.pop("practice_area_ids", [])
+        permission_codes = validated_data.pop("permission_codes", [])
 
         user, temp_password = AuthService.create_user_with_temp_password(
             email=validated_data.pop("email"),
@@ -49,6 +53,13 @@ class AdminLawyerCreateService:
 
         if practice_areas:
             lawyer.practice_areas.set(practice_areas)
+
+        if permission_codes:
+            AdminLawyerPermissionService.sync_permissions(
+                lawyer=lawyer,
+                permission_codes=permission_codes,
+                granted_by=created_by,
+            )
 
         LawFirmMember.objects.create(
             firm=law_firm,

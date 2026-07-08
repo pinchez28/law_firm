@@ -8,6 +8,7 @@ from apps.staff.views.admin.lawyers import (
     AdminLawyerDeleteView,
     AdminLawyerDetailView,
     AdminLawyerListView,
+    AdminLawyerPermissionView,
     AdminLawyerUpdateView,
 )
 
@@ -23,5 +24,10 @@ urlpatterns = [
         "<uuid:lawyer_id>/change-status/",
         AdminLawyerChangeStatusView.as_view(),
         name="admin-lawyer-change-status",
+    ),
+    path(
+        "<uuid:lawyer_id>/permissions/",
+        AdminLawyerPermissionView.as_view(),
+        name="admin-lawyer-permissions",
     ),
 ]

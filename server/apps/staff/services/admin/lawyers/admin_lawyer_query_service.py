@@ -12,7 +12,7 @@ class AdminLawyerQueryService:
             Lawyer.objects
             .filter(law_firm=law_firm)
             .select_related("user", "law_firm", "reports_to", "reports_to__user")
-            .prefetch_related("practice_areas")
+            .prefetch_related("practice_areas", "permissions")
         )
 
     @staticmethod
