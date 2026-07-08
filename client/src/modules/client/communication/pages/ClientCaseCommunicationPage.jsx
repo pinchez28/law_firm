@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Briefcase, MessageCircle } from 'lucide-react';
 
@@ -36,30 +36,36 @@ const toCaseThread = (caseItem) => ({
 export default function ClientCaseCommunicationPage() {
   const params = useParams();
   const routeCaseId = params.id || params.caseId;
-  const [selectedCaseId, setSelectedCaseId] = useState(routeCaseId || null);
-  const [feedback, setFeedback] = useState(null);
 
   const { data: cases = [], isLoading, refetch } = useClientCases();
-  const safeCases = Array.isArray(cases) ? cases : [];
+
+  // ✅ Fix Warning 3 & 4 — wrap safeCases in useMemo for stable reference
+  const safeCases = useMemo(() => (Array.isArray(cases) ? cases : []), [cases]);
+
+  // ✅ Fix Errors 1 & 2 — derive selectedCaseId without useEffect
+  // Priority: routeCaseId from URL → first case in list → null
+  const defaultCaseId = useMemo(() => {
+    if (routeCaseId) return routeCaseId;
+    if (safeCases.length) return safeCases[0].id;
+    return null;
+  }, [routeCaseId, safeCases]);
+
+  // Keep useState so the user can still manually change the selected case
+  // via the dropdown, but initialise it from the derived default
+  const [selectedCaseId, setSelectedCaseId] = useState(defaultCaseId);
+  const [feedback, setFeedback] = useState(null);
+
   const threads = useMemo(() => safeCases.map(toCaseThread), [safeCases]);
-  const selectedCase = safeCases.find(
-    (caseItem) => String(caseItem.id) === String(selectedCaseId),
+
+  const selectedCase = useMemo(
+    () => safeCases.find((c) => String(c.id) === String(selectedCaseId)),
+    [safeCases, selectedCaseId],
   );
 
   const messagesQuery = useCaseMessages(selectedCaseId);
   const sendMessage = useSendCaseMessage();
 
-  useEffect(() => {
-    if (routeCaseId) {
-      setSelectedCaseId(routeCaseId);
-    }
-  }, [routeCaseId]);
-
-  useEffect(() => {
-    if (!selectedCaseId && safeCases.length) {
-      setSelectedCaseId(safeCases[0].id);
-    }
-  }, [safeCases, selectedCaseId]);
+  // ✅ Both useEffect blocks removed — no more cascading renders
 
   const handleSendMessage = async (body) => {
     setFeedback(null);

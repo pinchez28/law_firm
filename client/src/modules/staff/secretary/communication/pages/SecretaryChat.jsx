@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Briefcase, Inbox } from 'lucide-react';
 
@@ -21,17 +21,15 @@ export default function SecretaryChat() {
   const [searchParams] = useSearchParams();
   const routeCaseId = params.id || params.caseId || searchParams.get('case');
 
-  const [selectedThreadId, setSelectedThreadId] = useState(null);
   const [selectedCaseId, setSelectedCaseId] = useState(routeCaseId || '');
   const [feedback, setFeedback] = useState(null);
 
   const { cases, loading: casesLoading } = useSecretaryCases();
   const { data, isLoading, refetch } = useSecretaryCaseThreads();
   const openCaseThread = useOpenCaseThread();
-  const messagesQuery = useThreadMessages(selectedThreadId);
-  const sendMessage = useSendThreadMessage();
 
-  const threads = data?.threads || [];
+  // ✅ Fix Warnings 4 & 5 — wrap threads in useMemo for stable reference
+  const threads = useMemo(() => data?.threads || [], [data?.threads]);
 
   const sortedCases = useMemo(
     () =>
@@ -41,25 +39,39 @@ export default function SecretaryChat() {
     [cases],
   );
 
-  useEffect(() => {
-    if (routeCaseId) setSelectedCaseId(routeCaseId);
-  }, [routeCaseId]);
+  // ✅ Fix Errors 1, 2 & 3 — derive selectedThreadId without useEffect
+  // Priority: match thread by routeCaseId → first thread → null
+  const defaultThreadId = useMemo(() => {
+    if (!threads.length) return null;
 
-  useEffect(() => {
-    if (!routeCaseId) return;
-    const existingThread = threads.find(
-      (thread) => String(thread.case?.id) === String(routeCaseId),
-    );
-    if (existingThread) {
-      setSelectedThreadId(existingThread.id);
+    // If a routeCaseId exists, find its matching thread first
+    if (routeCaseId) {
+      const matchedThread = threads.find(
+        (thread) => String(thread.case?.id) === String(routeCaseId),
+      );
+      if (matchedThread) return matchedThread.id;
     }
+
+    // Fallback to first thread
+    return threads[0].id;
   }, [routeCaseId, threads]);
 
-  useEffect(() => {
-    if (!selectedThreadId && threads.length) {
-      setSelectedThreadId(threads[0].id);
-    }
-  }, [selectedThreadId, threads]);
+  // User can still manually change thread via sidebar or after opening a thread
+  const [selectedThreadId, setSelectedThreadId] = useState(defaultThreadId);
+
+  // ✅ Ensure selectedThreadId is always valid within current threads list
+  const resolvedThreadId = useMemo(() => {
+    if (!threads.length) return null;
+    const stillExists = threads.some(
+      (thread) => String(thread.id) === String(selectedThreadId),
+    );
+    return stillExists ? selectedThreadId : (threads[0]?.id ?? null);
+  }, [threads, selectedThreadId]);
+
+  const messagesQuery = useThreadMessages(resolvedThreadId);
+  const sendMessage = useSendThreadMessage();
+
+  // ✅ All three useEffect blocks removed — no more cascading renders
 
   const handleOpenCaseThread = async (caseId = selectedCaseId) => {
     if (!caseId) {
@@ -82,7 +94,7 @@ export default function SecretaryChat() {
   };
 
   const handleSendMessage = async (body) => {
-    await sendMessage.mutateAsync({ threadId: selectedThreadId, body });
+    await sendMessage.mutateAsync({ threadId: resolvedThreadId, body });
   };
 
   const sidebarExtra = (
@@ -151,7 +163,7 @@ export default function SecretaryChat() {
         title='Secretary Client Communication'
         subtitle='Manage all client-firm communication threads per case.'
         threads={threads}
-        selectedThreadId={selectedThreadId}
+        selectedThreadId={resolvedThreadId}
         onSelectThread={(thread) => setSelectedThreadId(thread.id)}
         messages={messagesQuery.data?.messages || []}
         onSendMessage={handleSendMessage}

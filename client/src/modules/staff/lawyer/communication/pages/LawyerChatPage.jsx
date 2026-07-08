@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Briefcase } from 'lucide-react';
 
@@ -28,11 +28,14 @@ export default function LawyerChatPage() {
   const casesQuery = useMyCases();
   const { data, isLoading, refetch } = useThreads();
   const openCaseThread = useOpenCaseThread();
-  const messagesQuery = useThreadMessages(selectedThreadId);
   const sendMessage = useSendThreadMessage();
 
-  const cases = casesQuery.data?.cases || [];
-  const threads = data?.threads || [];
+  // ✅ Fix Warnings — stable references for cases and threads
+  const cases = useMemo(
+    () => casesQuery.data?.cases || [],
+    [casesQuery.data?.cases],
+  );
+  const threads = useMemo(() => data?.threads || [], [data?.threads]);
 
   const sortedCases = useMemo(
     () =>
@@ -42,25 +45,38 @@ export default function LawyerChatPage() {
     [cases],
   );
 
-  useEffect(() => {
-    if (routeCaseId) setSelectedCaseId(routeCaseId);
-  }, [routeCaseId]);
+  // ✅ Fix Error 1 — derive resolvedCaseId instead of syncing via useEffect
+  // Route param takes priority, otherwise use user's dropdown selection
+  const resolvedCaseId = routeCaseId || selectedCaseId;
 
-  useEffect(() => {
-    if (!routeCaseId) return;
-    const existingThread = threads.find(
-      (thread) => String(thread.case?.id) === String(routeCaseId),
-    );
-    if (existingThread) setSelectedThreadId(existingThread.id);
-  }, [routeCaseId, threads]);
-
-  useEffect(() => {
-    if (!selectedThreadId && threads.length) {
-      setSelectedThreadId(threads[0].id);
+  // ✅ Fix Errors 2 & 3 — derive resolvedThreadId instead of syncing via useEffect
+  const resolvedThreadId = useMemo(() => {
+    // If route specifies a case, find its matching thread
+    if (routeCaseId) {
+      const existingThread = threads.find(
+        (thread) => String(thread.case?.id) === String(routeCaseId),
+      );
+      if (existingThread) return existingThread.id;
     }
-  }, [selectedThreadId, threads]);
 
-  const handleOpenCaseThread = async (caseId = selectedCaseId) => {
+    // Keep current user selection if it still exists in the list
+    if (
+      selectedThreadId &&
+      threads.some((thread) => String(thread.id) === String(selectedThreadId))
+    ) {
+      return selectedThreadId;
+    }
+
+    // Default to first thread
+    if (threads.length) return threads[0].id;
+    return null;
+  }, [routeCaseId, selectedThreadId, threads]);
+
+  const messagesQuery = useThreadMessages(resolvedThreadId);
+
+  // ✅ All three useEffect blocks removed — no more cascading renders
+
+  const handleOpenCaseThread = async (caseId = resolvedCaseId) => {
     if (!caseId) {
       setFeedback({ type: 'error', text: 'Choose an assigned case first.' });
       return;
@@ -84,7 +100,7 @@ export default function LawyerChatPage() {
   };
 
   const handleSendMessage = async (body) => {
-    await sendMessage.mutateAsync({ threadId: selectedThreadId, body });
+    await sendMessage.mutateAsync({ threadId: resolvedThreadId, body });
   };
 
   const sidebarExtra = (
@@ -114,7 +130,7 @@ export default function LawyerChatPage() {
 
           <div className='flex flex-col gap-3 md:flex-row'>
             <select
-              value={selectedCaseId}
+              value={resolvedCaseId}
               onChange={(event) => setSelectedCaseId(event.target.value)}
               className='h-12 flex-1 rounded-2xl border border-border-light bg-white px-4 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-border-dark dark:bg-slate-900 dark:text-white'
             >
@@ -130,7 +146,7 @@ export default function LawyerChatPage() {
               disabled={
                 casesQuery.isLoading ||
                 openCaseThread.isPending ||
-                !selectedCaseId
+                !resolvedCaseId
               }
               onClick={() => handleOpenCaseThread()}
             >
@@ -156,7 +172,7 @@ export default function LawyerChatPage() {
         title='Lawyer Communication'
         subtitle='Read assigned case communication and reply to private admin-staff chats.'
         threads={threads}
-        selectedThreadId={selectedThreadId}
+        selectedThreadId={resolvedThreadId}
         onSelectThread={(thread) => setSelectedThreadId(thread.id)}
         messages={messagesQuery.data?.messages || []}
         onSendMessage={handleSendMessage}

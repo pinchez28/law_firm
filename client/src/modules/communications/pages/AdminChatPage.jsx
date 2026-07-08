@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MessageSquarePlus, Megaphone } from 'lucide-react';
 
@@ -23,7 +23,6 @@ const initialThreadForm = {
 };
 
 export default function AdminChatPage() {
-  const [selectedThreadId, setSelectedThreadId] = useState(null);
   const [threadType, setThreadType] = useState('ALL');
   const [form, setForm] = useState(initialThreadForm);
   const [feedback, setFeedback] = useState(null);
@@ -31,30 +30,40 @@ export default function AdminChatPage() {
   const { staff } = useAdminStaff();
   const params = threadType === 'ALL' ? {} : { thread_type: threadType };
   const { data, isLoading, refetch } = useAdminThreads(params);
-  const messagesQuery = useThreadMessages(selectedThreadId);
-  const sendMessage = useSendThreadMessage();
   const startThread = useStartStaffThread();
 
-  const threads = data?.threads || [];
+  // ✅ Fix Warning — wrap threads in useMemo for stable reference
+  const threads = useMemo(() => data?.threads || [], [data?.threads]);
+
   const activeStaff = useMemo(
     () => (staff || []).filter((member) => member.is_active !== false),
     [staff],
   );
 
-  useEffect(() => {
-    if (!selectedThreadId && threads.length) {
-      setSelectedThreadId(threads[0].id);
-      return;
-    }
+  // ✅ Fix Error — derive selectedThreadId without useEffect
+  // Initialise to first thread if available
+  const defaultThreadId = useMemo(
+    () => (threads.length ? threads[0].id : null),
+    [threads],
+  );
 
-    if (
-      selectedThreadId &&
-      threads.length &&
-      !threads.some((thread) => String(thread.id) === String(selectedThreadId))
-    ) {
-      setSelectedThreadId(threads[0].id);
-    }
-  }, [selectedThreadId, threads]);
+  // User can still manually change thread via sidebar or after starting a new one
+  const [selectedThreadId, setSelectedThreadId] = useState(defaultThreadId);
+
+  // ✅ Ensure selectedThreadId is always valid within current threads list
+  // Replaces the second if-block that was inside the old useEffect
+  const resolvedThreadId = useMemo(() => {
+    if (!threads.length) return null;
+    const stillExists = threads.some(
+      (thread) => String(thread.id) === String(selectedThreadId),
+    );
+    return stillExists ? selectedThreadId : (threads[0]?.id ?? null);
+  }, [threads, selectedThreadId]);
+
+  const messagesQuery = useThreadMessages(resolvedThreadId);
+  const sendMessage = useSendThreadMessage();
+
+  // ✅ useEffect block removed — no more cascading renders
 
   const updateForm = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -88,7 +97,7 @@ export default function AdminChatPage() {
   };
 
   const handleSendMessage = async (body) => {
-    await sendMessage.mutateAsync({ threadId: selectedThreadId, body });
+    await sendMessage.mutateAsync({ threadId: resolvedThreadId, body });
   };
 
   const sidebarExtra = (
@@ -208,7 +217,7 @@ export default function AdminChatPage() {
         title='Admin Communication Center'
         subtitle='View all chat threads, reply to case communication, and privately chat with staff.'
         threads={threads}
-        selectedThreadId={selectedThreadId}
+        selectedThreadId={resolvedThreadId}
         onSelectThread={(thread) => setSelectedThreadId(thread.id)}
         messages={messagesQuery.data?.messages || []}
         onSendMessage={handleSendMessage}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import ChatWorkspace from '@/modules/communications/components/ChatWorkspace';
@@ -12,14 +12,12 @@ import Card from '@/components/ui/Card';
 
 export default function AdminClientCommunicationPage() {
   const { id } = useParams();
-  const [selectedThreadId, setSelectedThreadId] = useState(null);
 
   const { data, isLoading, refetch } = useAdminThreads({
     thread_type: 'CASE_CLIENT',
   });
-  const messagesQuery = useThreadMessages(selectedThreadId);
-  const sendMessage = useSendThreadMessage();
 
+  // ✅ Fix Warning — stable reference for threads
   const threads = useMemo(() => {
     const allThreads = data?.threads || [];
     return allThreads.filter(
@@ -27,22 +25,32 @@ export default function AdminClientCommunicationPage() {
     );
   }, [data?.threads, id]);
 
-  useEffect(() => {
-    if (!selectedThreadId && threads.length) {
-      setSelectedThreadId(threads[0].id);
-      return;
-    }
+  // ✅ Fix Error — derive selectedThreadId without useEffect
+  // Priority: keep existing valid selection → first thread → null
+  const defaultThreadId = useMemo(() => {
+    if (!threads.length) return null;
+    return threads[0].id;
+  }, [threads]);
 
-    if (
-      selectedThreadId &&
-      !threads.some((thread) => String(thread.id) === String(selectedThreadId))
-    ) {
-      setSelectedThreadId(threads[0]?.id || null);
-    }
-  }, [selectedThreadId, threads]);
+  const [selectedThreadId, setSelectedThreadId] = useState(defaultThreadId);
+
+  // ✅ Resolve case where selected thread no longer exists in the list
+  // (e.g. client filter changed) — derived safely via useMemo
+  const resolvedThreadId = useMemo(() => {
+    if (!threads.length) return null;
+    const stillExists = threads.some(
+      (thread) => String(thread.id) === String(selectedThreadId),
+    );
+    return stillExists ? selectedThreadId : threads[0].id;
+  }, [threads, selectedThreadId]);
+
+  const messagesQuery = useThreadMessages(resolvedThreadId);
+  const sendMessage = useSendThreadMessage();
+
+  // ✅ Both useEffect blocks removed — no more cascading renders
 
   const handleSendMessage = async (body) => {
-    await sendMessage.mutateAsync({ threadId: selectedThreadId, body });
+    await sendMessage.mutateAsync({ threadId: resolvedThreadId, body });
   };
 
   return (
@@ -58,7 +66,7 @@ export default function AdminClientCommunicationPage() {
         title='Client Case Communication'
         subtitle='Admin view of all case-specific communication threads for this client.'
         threads={threads}
-        selectedThreadId={selectedThreadId}
+        selectedThreadId={resolvedThreadId}
         onSelectThread={(thread) => setSelectedThreadId(thread.id)}
         messages={messagesQuery.data?.messages || []}
         onSendMessage={handleSendMessage}
