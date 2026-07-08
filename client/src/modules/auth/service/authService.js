@@ -9,6 +9,11 @@ const authService = {
     return data;
   },
 
+  async me() {
+    const { data } = await axiosInstance.get('/auth/me/');
+    return data;
+  },
+
   async register(payload) {
     const { data } = await axiosInstance.post('/auth/register/', payload);
     return data;

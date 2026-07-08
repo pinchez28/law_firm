@@ -139,8 +139,8 @@ export default function AdminDashboardPage() {
         statusDescription='All systems are running normally.'
       />
 
-      <section className='-mt-2'>
-        <DashboardGrid className='mt-0 gap-0'>
+      <section className='mt-4'>
+        <DashboardGrid>
           {adminTiles.map((tile) => {
             const Icon = tile.icon;
 
@@ -152,7 +152,7 @@ export default function AdminDashboardPage() {
                 rounded='none'
                 shadow
                 onClick={() => navigate(tile.path)}
-                className='group min-h-[180px] cursor-pointer border border-white/10 p-5 hover:-translate-y-0'
+                className='group min-h-[180px] cursor-pointer p-5'
               >
                 <div className='relative z-10 flex h-full flex-col justify-between'>
                   <div className='flex items-start justify-between'>

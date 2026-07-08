@@ -48,20 +48,23 @@ const adminStaffService = {
       ...member,
       user_id: member.id,
       role: member.firm_role || role,
-      workload: {
-        level: 'N/A',
+      system_role: member.system_role,
+      workload: member.workload || {
+        level: 'NOT_TRACKED',
         active_cases: 0,
         closed_cases: 0,
         total_cases: 0,
+        source: 'not_tracked',
       },
     };
   },
 
   splitName(payload) {
     const nameParts = (payload.full_name || '').trim().split(/\s+/);
+    const firstName = payload.first_name || nameParts[0] || '';
     return {
-      first_name: payload.first_name || nameParts[0] || '',
-      last_name: payload.last_name || nameParts.slice(1).join(' ') || '-',
+      first_name: firstName,
+      last_name: payload.last_name || nameParts.slice(1).join(' ') || firstName,
     };
   },
 
@@ -177,11 +180,14 @@ const adminStaffService = {
         },
         permissions: staffMember.permissions || [],
         available_permissions: availablePermissions,
-        workload: {
+        analytics: staffMember.analytics || {},
+        workload: staffMember.workload || {
           active_cases: 0,
           closed_cases: 0,
           total_cases: 0,
+          it_management: staffMember.analytics?.it_management || null,
         },
+        it_management: staffMember.analytics?.it_management || null,
         secretary_metrics: staffMember.analytics
           ? {
               assigned_tasks: 0,
@@ -227,6 +233,8 @@ const adminStaffService = {
         staff_number: payload.staff_number || undefined,
         employee_number: payload.employee_number || undefined,
         department: payload.department || '',
+        branch: payload.branch || null,
+        department_unit: payload.department_unit || null,
         job_title: payload.job_title || 'Lawyer',
         work_email: payload.work_email || payload.email,
         work_phone: payload.work_phone || payload.phone_number,

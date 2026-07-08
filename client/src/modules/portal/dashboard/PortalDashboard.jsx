@@ -85,8 +85,8 @@ export default function PortalDashboard() {
         statusDescription='Your onboarding request is currently under review by the firm.'
       />
 
-      <section className='-mt-2'>
-        <DashboardGrid className='mt-0 gap-0'>
+      <section className='mt-4'>
+        <DashboardGrid>
           {portalTiles.map((tile) => {
             const Icon = tile.icon;
 
@@ -98,7 +98,7 @@ export default function PortalDashboard() {
                 rounded='none'
                 shadow
                 onClick={() => navigate(tile.path)}
-                className='group min-h-[180px] border border-white/10 p-5 hover:-translate-y-0'
+                className='group min-h-[180px] p-5'
               >
                 <div className='relative z-10 flex h-full flex-col justify-between'>
                   <div className='flex items-start justify-between'>

@@ -15,6 +15,7 @@ import {
   Bot,
   Brain,
   Lightbulb,
+  MonitorCog,
 } from 'lucide-react';
 
 export const adminSidebarLinks = [
@@ -48,6 +49,7 @@ export const adminSidebarLinks = [
 
   /* ================= REPORTS ================= */
   { name: 'Reports', path: '/admin/reports', icon: BarChart },
+  { name: 'IT Report', path: '/admin/it-report', icon: MonitorCog },
 
   /* ================= COMMUNICATION ================= */
   { name: 'Communication', path: '/admin/communication', icon: MessageSquare },

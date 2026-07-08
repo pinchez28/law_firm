@@ -149,6 +149,9 @@ const AdminPaymentsPage = lazy(
 const AdminReportsPage = lazy(
   () => import('@/modules/admin/reports/pages/AdminReportsPage'),
 );
+const AdminITReportPage = lazy(
+  () => import('@/modules/admin/it/pages/AdminITReportPage'),
+);
 
 /* COMMUNICATION */
 const AdminChatPage = lazy(
@@ -575,6 +578,7 @@ const AppRoutes = () => {
 
           {/* REPORTS */}
           <Route path='reports' element={<AdminReportsPage />} />
+          <Route path='it-report' element={<AdminITReportPage />} />
 
           {/* COMMUNICATION */}
           <Route path='communication' element={<AdminChatPage />} />

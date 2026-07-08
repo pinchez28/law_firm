@@ -1,4 +1,5 @@
 import { ShieldCheck } from 'lucide-react';
+import SectionHeading from '@/components/ui/SectionHeading';
 
 const DashboardHero = ({
   badge = 'Dashboard',
@@ -18,9 +19,14 @@ const DashboardHero = ({
             {badge}
           </p>
 
-          <h1 className='text-3xl lg:text-4xl font-bold mb-3'>{title}</h1>
-
-          <p className='text-blue-100 max-w-2xl'>{description}</p>
+          <SectionHeading
+            title={title}
+            subtitle={description}
+            size='hero'
+            variant='dark'
+            as='h1'
+            className='max-w-2xl [&_p]:text-blue-100'
+          />
         </div>
 
         <div className='bg-white/10 backdrop-blur-md rounded-none p-5 min-w-[260px] border border-white/10'>

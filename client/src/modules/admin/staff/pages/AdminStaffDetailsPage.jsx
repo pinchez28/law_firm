@@ -58,6 +58,7 @@ const SingleStaffDetailsPage = () => {
   const membership = staff.membership || {};
   const permissions = staff.permissions || [];
   const workload = staff.workload || {};
+  const itManagement = staff.it_management || workload.it_management || {};
   const secretaryMetrics = staff.secretary_metrics || {};
   const recentCases = staff.recent_cases || [];
 
@@ -205,6 +206,49 @@ const SingleStaffDetailsPage = () => {
               value={secretaryMetrics.documents_processed || 0}
             />
           </div>
+        </div>
+      )}
+      {membership.role === 'IT' && (
+        <div
+          style={{
+            marginBottom: 24,
+            padding: 20,
+            border: '1px solid #e5e7eb',
+            borderRadius: 12,
+          }}
+        >
+          <h3>IT Management</h3>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: 12,
+              marginTop: 12,
+            }}
+          >
+            <StatsCard
+              title='Managed By'
+              value={
+                itManagement.source === 'it_department'
+                  ? 'IT Department'
+                  : 'Admin Fallback'
+              }
+            />
+            <StatsCard
+              title='Department'
+              value={itManagement.department_name || 'Not created'}
+            />
+            <StatsCard
+              title='Active Permissions'
+              value={staff.analytics?.active_permissions || permissions.length}
+            />
+          </div>
+
+          <p className='mt-3 text-sm text-slate-500 dark:text-slate-300'>
+            {itManagement.message ||
+              'No IT department exists, so admin handles IT matters.'}
+          </p>
         </div>
       )}
       {/* RECENT CASES */}

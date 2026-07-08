@@ -90,8 +90,8 @@ export default function ClientDashboardPage() {
         statusDescription='Your legal matters are being actively managed and reviewed in real time.'
       />
 
-      <section className='-mt-2'>
-        <DashboardGrid className='mt-0 gap-0'>
+      <section className='mt-4'>
+        <DashboardGrid>
           {clientTiles.map((tile) => {
             const Icon = tile.icon;
 
@@ -102,7 +102,7 @@ export default function ClientDashboardPage() {
                 variant={tile.variant}
                 rounded='none'
                 shadow={true}
-                className='group min-h-[180px] cursor-pointer border border-white/10 p-5 hover:-translate-y-0'
+                className='group min-h-[180px] cursor-pointer p-5'
               >
                 <div className='relative z-10 flex h-full flex-col justify-between'>
                   <div className='flex items-start justify-between'>

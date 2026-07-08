@@ -365,13 +365,23 @@ html:not(.dark) .public-home #home [class*="via-black"] {
     align-self: stretch;
   }
 
-  .auth-layout .auth-main > div > div:last-child {
+  .auth-layout.auth-register .auth-main > div > div:last-child {
     min-height: inherit;
     height: auto !important;
     overflow-y: visible;
     align-items: flex-start !important;
     justify-content: center !important;
     padding-top: 7.5rem !important;
+    padding-bottom: 4rem !important;
+  }
+
+  .auth-layout.auth-compact .auth-main > div > div:last-child {
+    min-height: inherit;
+    height: auto !important;
+    overflow-y: visible;
+    align-items: center !important;
+    justify-content: center !important;
+    padding-top: 4rem !important;
     padding-bottom: 4rem !important;
   }
 }

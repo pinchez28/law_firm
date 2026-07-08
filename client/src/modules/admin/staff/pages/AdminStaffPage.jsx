@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Swal from '@/core/utils/themedSwal';
@@ -23,10 +23,20 @@ import { Input3D } from '@/components/ui/Input3D';
 import Button3D from '@/components/ui/Button3D';
 import SectionHeading from '@/components/ui/SectionHeading';
 
+const STAFF_ROLE_TABS = [
+  { key: 'ALL', label: 'All Staff', countKey: 'total_staff' },
+  { key: 'LAWYER', label: 'Lawyers', countKey: 'lawyers' },
+  { key: 'SECRETARY', label: 'Secretaries', countKey: 'secretaries' },
+  { key: 'ACCOUNTANT', label: 'Accountants', countKey: 'accountants' },
+  { key: 'HR', label: 'HR', countKey: 'hr' },
+  { key: 'IT', label: 'IT', countKey: 'it' },
+];
+
 export default function AdminStaffPage() {
   const navigate = useNavigate();
 
   const [search, setSearch] = useState('');
+  const [activeRoleTab, setActiveRoleTab] = useState('ALL');
 
   const {
     staff,
@@ -38,8 +48,13 @@ export default function AdminStaffPage() {
     toggleStaffStatus,
   } = useAdminStaff();
 
-  const filteredStaff = (staff || [])
-    .filter((member) => {
+  const filteredStaff = useMemo(() => {
+    return (staff || [])
+      .filter((member) => {
+        if (activeRoleTab === 'ALL') return true;
+        return member.role === activeRoleTab;
+      })
+      .filter((member) => {
       const term = search.toLowerCase();
 
       return (
@@ -48,7 +63,11 @@ export default function AdminStaffPage() {
         member.role?.toLowerCase().includes(term)
       );
     })
-    .map((m) => ({ ...m, id: m.user_id }));
+      .map((m) => ({ ...m, id: m.user_id }));
+  }, [activeRoleTab, search, staff]);
+
+  const activeRoleLabel =
+    STAFF_ROLE_TABS.find((tab) => tab.key === activeRoleTab)?.label || 'Staff';
 
   const handleToggleStatus = async (member) => {
     const activating = !member.is_active;
@@ -140,6 +159,36 @@ export default function AdminStaffPage() {
   };
 
   const renderWorkload = (workload) => {
+    if (!workload || workload.level === 'NOT_TRACKED') {
+      return <span className='text-text-muted-light dark:text-text-muted-dark'>Not tracked</span>;
+    }
+
+    if (workload.level === 'DEPARTMENT_MANAGED') {
+      return (
+        <div className='leading-tight'>
+          <span className='font-semibold text-cyan-600 dark:text-cyan-300'>
+            {workload.label || 'IT Department'}
+          </span>
+          <p className='text-xs text-slate-500 dark:text-text-muted-dark'>
+            {workload.description || 'IT matters are department managed'}
+          </p>
+        </div>
+      );
+    }
+
+    if (workload.level === 'ADMIN_FALLBACK') {
+      return (
+        <div className='leading-tight'>
+          <span className='font-semibold text-amber-600 dark:text-amber-300'>
+            {workload.label || 'Admin fallback'}
+          </span>
+          <p className='text-xs text-slate-500 dark:text-text-muted-dark'>
+            {workload.description || 'Admin handles IT matters until IT exists'}
+          </p>
+        </div>
+      );
+    }
+
     const styles = {
       LOW: 'text-success',
       MEDIUM: 'text-warning',
@@ -147,9 +196,12 @@ export default function AdminStaffPage() {
     };
 
     return (
-      <span className={styles[workload?.level] || ''}>
-        {workload?.level || 'N/A'}
-      </span>
+      <div className='leading-tight'>
+        <span className={styles[workload.level] || ''}>{workload.level}</span>
+        <p className='text-xs text-slate-500 dark:text-text-muted-dark'>
+          {workload.active_cases ?? 0} active cases
+        </p>
+      </div>
     );
   };
 
@@ -251,11 +303,44 @@ export default function AdminStaffPage() {
       </div>
 
       {/* Search */}
-      <Card className='p-4'>
+      <Card className='space-y-4 p-4'>
+        <div className='overflow-x-auto'>
+          <div className='flex min-w-max gap-2'>
+            {STAFF_ROLE_TABS.map((tab) => {
+              const isActive = activeRoleTab === tab.key;
+              const count = summary?.[tab.countKey] ?? 0;
+
+              return (
+                <button
+                  key={tab.key}
+                  type='button'
+                  onClick={() => setActiveRoleTab(tab.key)}
+                  className={`flex min-h-11 items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold transition ${
+                    isActive
+                      ? 'border-brand-primary bg-brand-primary text-white shadow-sm'
+                      : 'border-border-light bg-surface-light text-text-primary-light hover:border-brand-primary dark:border-border-dark dark:bg-surface-dark dark:text-text-primary-dark'
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs ${
+                      isActive
+                        ? 'bg-white/20 text-white'
+                        : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <Input3D
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder='Search staff...'
+          placeholder={`Search ${activeRoleLabel.toLowerCase()}...`}
         />
       </Card>
 
@@ -264,7 +349,7 @@ export default function AdminStaffPage() {
         data={filteredStaff}
         mobileTitleKey='full_name'
         mobileSubtitleKey='email'
-        emptyMessage='No staff members found.'
+        emptyMessage={`No ${activeRoleLabel.toLowerCase()} found.`}
         columns={[
           {
             key: 'full_name',
@@ -301,38 +386,44 @@ export default function AdminStaffPage() {
             ),
           },
         ]}
-        actions={(member) => (
-          <div className='flex flex-wrap gap-2'>
-            <Button3D
-              size='sm'
-              onClick={() =>
-                navigate(
-                  `/admin/staff/${member.user_id}?role=${encodeURIComponent(member.role)}`,
-                )
-              }
-            >
-              View
-            </Button3D>
+        actions={(member) => {
+          if (member.system_role === 'ADMIN') {
+            return null;
+          }
 
-            <Button3D
-              size='sm'
-              variant={member.is_active ? 'warning' : 'success'}
-              onClick={() => handleToggleStatus(member)}
-            >
-              {member.is_active ? 'Deactivate' : 'Activate'}
-            </Button3D>
-
-            {member.workload?.active_cases === 0 && (
+          return (
+            <div className='flex flex-wrap gap-2'>
               <Button3D
                 size='sm'
-                variant='danger'
-                onClick={() => handleDelete(member)}
+                onClick={() =>
+                  navigate(
+                    `/admin/staff/${member.user_id}?role=${encodeURIComponent(member.role)}`,
+                  )
+                }
               >
-                Delete
+                View
               </Button3D>
-            )}
-          </div>
-        )}
+
+              <Button3D
+                size='sm'
+                variant={member.is_active ? 'warning' : 'success'}
+                onClick={() => handleToggleStatus(member)}
+              >
+                {member.is_active ? 'Deactivate' : 'Activate'}
+              </Button3D>
+
+              {member.workload?.active_cases === 0 && (
+                <Button3D
+                  size='sm'
+                  variant='danger'
+                  onClick={() => handleDelete(member)}
+                >
+                  Delete
+                </Button3D>
+              )}
+            </div>
+          );
+        }}
       />
     </div>
   );

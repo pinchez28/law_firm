@@ -90,13 +90,8 @@ export default function SecretaryCreateCasePage() {
 
       await createCase({
         ...formData,
-
-        // IMPORTANT: backend expects `client` (not client_id)
-        client: selectedClientId,
-
+        client_id: selectedClientId,
         plaintiff: selectedClient?.full_name || '',
-        assigned_lawyer: null,
-        assigned_secretary: null,
       });
 
       navigate('/secretary/cases');

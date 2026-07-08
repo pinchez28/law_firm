@@ -12,6 +12,7 @@ import {
 
 const REFRESH_BEFORE_EXPIRY_MS = 60 * 1000;
 const MIN_REFRESH_DELAY_MS = 5 * 1000;
+const SESSION_SYNC_INTERVAL_MS = 30 * 1000;
 
 const getTokenExpiryMs = (token) => {
   if (!token) return null;
@@ -130,6 +131,38 @@ const AuthProvider = ({ children }) => {
     }
   }, [clearSessionAndRedirect, user]);
 
+  const syncSessionUser = useCallback(async () => {
+    const stored = getStoredAuth();
+
+    if (!stored.accessToken || !stored.refreshToken || !stored.user) {
+      return;
+    }
+
+    try {
+      const data = await authService.me();
+      const serverUser = {
+        ...data.user,
+        firm_role: data.firm_role ?? data.user?.firm_role ?? null,
+      };
+      const wasAdmin = stored.user?.role === 'ADMIN';
+      const isStillAdmin = serverUser.role === 'ADMIN';
+
+      if (wasAdmin && !isStillAdmin) {
+        clearSessionAndRedirect();
+        return;
+      }
+
+      const storage = getAuthStorage();
+      storage.setItem('user', JSON.stringify(serverUser));
+      setUser(serverUser);
+    } catch (error) {
+      const status = error.response?.status;
+      if (status === 401 || status === 403) {
+        clearSessionAndRedirect();
+      }
+    }
+  }, [clearSessionAndRedirect]);
+
   useEffect(() => {
     const stored = getStoredAuth();
 
@@ -189,6 +222,28 @@ const AuthProvider = ({ children }) => {
       document.removeEventListener('visibilitychange', checkSessionOnFocus);
     };
   }, [accessToken, refreshToken, clearSessionAndRedirect, refreshSession]);
+
+  useEffect(() => {
+    if (!accessToken || !refreshToken) {
+      return undefined;
+    }
+
+    syncSessionUser();
+
+    const intervalId = window.setInterval(
+      syncSessionUser,
+      SESSION_SYNC_INTERVAL_MS,
+    );
+
+    window.addEventListener('focus', syncSessionUser);
+    document.addEventListener('visibilitychange', syncSessionUser);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', syncSessionUser);
+      document.removeEventListener('visibilitychange', syncSessionUser);
+    };
+  }, [accessToken, refreshToken, syncSessionUser]);
 
   // =========================
   // ROLE HELPERS (ADD THIS)

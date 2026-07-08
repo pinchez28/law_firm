@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import DashboardGrid from '@/components/dashboard/DashboardGrid';
 import DashboardHero from '@/components/dashboard/DashboardHero';
 import DashboardTile from '@/components/dashboard/DashboardTile';
+import SystemHealthReport from '@/components/it/SystemHealthReport';
 import { useStaffDashboard } from '@/modules/staff/common/hooks/useStaffWorkspace';
 
 export default function StaffDashboardPage({ config }) {
@@ -11,6 +12,8 @@ export default function StaffDashboardPage({ config }) {
   const { data } = useStaffDashboard(config);
   const profile = data?.profile || {};
   const summary = data?.summary || {};
+  const itManagement = summary.it_management;
+  const systemHealth = data?.system_health;
   const Icon = config.primaryIcon || Activity;
 
   return (
@@ -24,8 +27,14 @@ export default function StaffDashboardPage({ config }) {
         icon={Icon}
       />
 
-      <section className='-mt-2'>
-        <DashboardGrid className='mt-0 gap-0'>
+      {config.firmRole === 'IT' && itManagement && (
+        <div className='mt-4 rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-900 dark:text-cyan-100'>
+          {itManagement.message}
+        </div>
+      )}
+
+      <section className='mt-4'>
+        <DashboardGrid>
           {config.tiles.map((tile) => {
             const TileIcon = tile.icon;
 
@@ -37,7 +46,7 @@ export default function StaffDashboardPage({ config }) {
                 rounded='none'
                 shadow
                 onClick={() => navigate(tile.path)}
-                className='group min-h-[180px] border border-white/10 p-5 hover:-translate-y-0'
+                className='group min-h-[180px] p-5'
               >
                 <div className='relative z-10 flex h-full flex-col justify-between'>
                   <div className='flex items-start justify-between gap-4'>
@@ -69,6 +78,12 @@ export default function StaffDashboardPage({ config }) {
           })}
         </DashboardGrid>
       </section>
+
+      {config.firmRole === 'IT' && systemHealth && (
+        <section className='mt-6'>
+          <SystemHealthReport report={systemHealth} showTasks={false} />
+        </section>
+      )}
     </>
   );
 }

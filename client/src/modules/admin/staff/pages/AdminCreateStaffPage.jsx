@@ -113,6 +113,10 @@ export default function AdminCreateStaffPage() {
     queryKey: ['admin-firm-departments'],
     queryFn: adminFirmService.getDepartments,
   });
+  const { data: branches = [], isLoading: isLoadingBranches } = useQuery({
+    queryKey: ['admin-firm-branches'],
+    queryFn: adminFirmService.getBranches,
+  });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -123,6 +127,8 @@ export default function AdminCreateStaffPage() {
     email: '',
     firm_role: 'LAWYER',
     department: '',
+    branch: '',
+    department_unit: '',
     job_title: 'Lawyer',
     staff_number: '',
     employee_number: '',
@@ -166,6 +172,7 @@ export default function AdminCreateStaffPage() {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+      ...(name === 'branch' ? { department_unit: '', department: '' } : {}),
     }));
   };
 
@@ -191,6 +198,12 @@ export default function AdminCreateStaffPage() {
     ROLE_DEFAULT_WORK_OPTIONS[formData.firm_role] || [];
   const rolePermissionOptions =
     ROLE_PERMISSION_OPTIONS[formData.firm_role] || [];
+  const availableDepartments = departments.filter(
+    (department) =>
+      !formData.branch ||
+      !department.branch ||
+      String(department.branch) === String(formData.branch),
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -340,18 +353,69 @@ export default function AdminCreateStaffPage() {
 
             <div className='space-y-2'>
               <label
-                htmlFor='department'
+                htmlFor='branch'
+                className='block text-sm font-medium text-text-primary-light dark:text-text-primary-dark'
+              >
+                Branch
+              </label>
+
+              <select
+                id='branch'
+                name='branch'
+                value={formData.branch}
+                onChange={handleChange}
+                disabled={isLoadingBranches || branches.length === 0}
+                className='
+                  w-full h-12 rounded-2xl border border-border-light dark:border-border-dark
+                  bg-surface-light dark:bg-surface-dark
+                  text-text-primary-light dark:text-text-primary-dark
+                  px-4 shadow-soft transition-all
+                  focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary
+                '
+              >
+                <option value=''>
+                  {isLoadingBranches
+                    ? 'Loading branches...'
+                    : branches.length === 0
+                      ? 'Main firm'
+                      : 'Main firm / no branch'}
+                </option>
+
+                {branches.map((branch) => (
+                  <option key={branch.id} value={branch.id}>
+                    {branch.name}
+                    {branch.is_head_office ? ' (Head Office)' : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className='space-y-2'>
+              <label
+                htmlFor='department_unit'
                 className='block text-sm font-medium text-text-primary-light dark:text-text-primary-dark'
               >
                 Department
               </label>
 
               <select
-                id='department'
-                name='department'
-                value={formData.department}
-                onChange={handleChange}
-                disabled={isLoadingDepartments}
+                id='department_unit'
+                name='department_unit'
+                value={formData.department_unit}
+                onChange={(event) => {
+                  const department = departments.find(
+                    (item) => String(item.id) === String(event.target.value),
+                  );
+                  setFormData((prev) => ({
+                    ...prev,
+                    department_unit: event.target.value,
+                    department: department?.name || '',
+                    branch:
+                      prev.branch ||
+                      (department?.branch ? String(department.branch) : ''),
+                  }));
+                }}
+                disabled={isLoadingDepartments || availableDepartments.length === 0}
                 className='
                   w-full h-12 rounded-2xl border border-border-light dark:border-border-dark
                   bg-surface-light dark:bg-surface-dark
@@ -363,12 +427,15 @@ export default function AdminCreateStaffPage() {
                 <option value=''>
                   {isLoadingDepartments
                     ? 'Loading departments...'
-                    : 'Select department'}
+                    : availableDepartments.length === 0
+                      ? 'No department'
+                      : 'Select department'}
                 </option>
 
-                {departments.map((department) => (
-                  <option key={department.id} value={department.name}>
+                {availableDepartments.map((department) => (
+                  <option key={department.id} value={department.id}>
                     {department.name}
+                    {department.branch_name ? ` - ${department.branch_name}` : ''}
                   </option>
                 ))}
               </select>

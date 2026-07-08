@@ -11,6 +11,34 @@ const adminFirmService = {
     return data;
   },
 
+  async registerOwnerLawyerProfile(payload) {
+    const { data } = await axiosInstance.post(
+      '/admin/firm/owner-lawyer-profile/',
+      payload,
+    );
+    return data;
+  },
+
+  async getAdminDelegation() {
+    const { data } = await axiosInstance.get('/admin/firm/admin-delegation/');
+    return data;
+  },
+
+  async delegateAdmin(payload) {
+    const { data } = await axiosInstance.post(
+      '/admin/firm/admin-delegation/',
+      payload,
+    );
+    return data;
+  },
+
+  async revokeDelegatedAdmin(userId) {
+    const { data } = await axiosInstance.delete(
+      `/admin/firm/admin-delegation/${userId}/`,
+    );
+    return data;
+  },
+
   async getSettings() {
     const { data } = await axiosInstance.get('/admin/firm/settings/');
     return data;
@@ -24,6 +52,38 @@ const adminFirmService = {
   async getDepartments() {
     const { data } = await axiosInstance.get('/admin/firm/departments/');
     return data.departments || [];
+  },
+
+  async getBranches() {
+    const { data } = await axiosInstance.get('/admin/firm/branches/');
+    return data.branches || [];
+  },
+
+  async createBranch(payload) {
+    const { data } = await axiosInstance.post('/admin/firm/branches/', payload);
+    return data;
+  },
+
+  async updateBranch(id, payload) {
+    const { data } = await axiosInstance.patch(
+      `/admin/firm/branches/${id}/`,
+      payload,
+    );
+    return data;
+  },
+
+  async deleteBranch(id) {
+    await axiosInstance.delete(`/admin/firm/branches/${id}/`);
+  },
+
+  async getStaffOptions() {
+    const { data } = await axiosInstance.get('/admin/firm/staff-options/');
+    return data.staff || [];
+  },
+
+  async getITReport() {
+    const { data } = await axiosInstance.get('/admin/firm/it-report/');
+    return data;
   },
 
   async createDepartment(payload) {

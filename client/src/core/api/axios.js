@@ -64,6 +64,14 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
+const forceLogoutToLogin = () => {
+  clearAuthSession();
+
+  if (window.location.pathname !== '/login') {
+    window.location.replace('/login');
+  }
+};
+
 /* =========================================================
    RESPONSE INTERCEPTOR (AUTO REFRESH)
 ========================================================= */
@@ -78,6 +86,15 @@ axiosInstance.interceptors.response.use(
       originalRequest?.url?.includes('/register') ||
       originalRequest?.url?.includes('/token/refresh');
 
+    const isAdminStaffEndpoint = originalRequest?.url?.includes('/admin/staff/');
+    const storedUser = getStoredAuth().user;
+
+    if (status === 403 && isAdminStaffEndpoint && storedUser?.role === 'ADMIN') {
+      forceLogoutToLogin();
+      attachApiErrorMessage(error);
+      return Promise.reject(error);
+    }
+
     if (status !== 401 || isAuthEndpoint) {
       attachApiErrorMessage(error);
       return Promise.reject(error);
@@ -85,8 +102,7 @@ axiosInstance.interceptors.response.use(
 
     // prevent infinite loop
     if (originalRequest._retry) {
-      clearAuthSession();
-      window.location.href = '/login';
+      forceLogoutToLogin();
       attachApiErrorMessage(error);
       return Promise.reject(error);
     }
@@ -137,9 +153,7 @@ axiosInstance.interceptors.response.use(
     } catch (err) {
       processQueue(err, null);
 
-      clearAuthSession();
-
-      window.location.href = '/login';
+      forceLogoutToLogin();
 
       attachApiErrorMessage(err);
       return Promise.reject(err);
