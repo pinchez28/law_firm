@@ -1,3 +1,5 @@
+import ClientCaseCommunicationPage from '@/modules/client/communication/pages/ClientCaseCommunicationPage';
+
 export default function ClientCommunicationWrapper() {
-  return <div>ClientCommunicationWrapper</div>;
+  return <ClientCaseCommunicationPage />;
 }

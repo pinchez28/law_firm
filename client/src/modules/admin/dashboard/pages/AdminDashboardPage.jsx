@@ -15,10 +15,10 @@ import {
 
 import { useNavigate } from 'react-router-dom';
 
+import useAuth from '@/core/hooks/useAuth';
 import DashboardHero from '@/components/dashboard/DashboardHero';
 import DashboardGrid from '@/components/dashboard/DashboardGrid';
 import DashboardTile from '@/components/dashboard/DashboardTile';
-import useAuth from '@/core/hooks/useAuth';
 
 const adminTiles = [
   {

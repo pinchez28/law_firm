@@ -299,8 +299,7 @@ const SecretaryCasesPage = lazy(
 );
 
 const SecretaryCreateCasePage = lazy(
-  () =>
-    import('@/modules/staff/secretary/cases/pages/SecretaryCreateCasePage'),
+  () => import('@/modules/staff/secretary/cases/pages/SecretaryCreateCasePage'),
 );
 
 const SecretaryCaseDetailsPage = lazy(
@@ -351,16 +350,12 @@ const AccountantSecurity = lazy(
 /* =========================================================
    HR
 ========================================================= */
-const HRDashboard = lazy(
-  () => import('@/modules/staff/hr/pages/HRDashboard'),
-);
+const HRDashboard = lazy(() => import('@/modules/staff/hr/pages/HRDashboard'));
 const HRStaffRecords = lazy(
   () => import('@/modules/staff/hr/pages/HRStaffRecords'),
 );
 const HRTasks = lazy(() => import('@/modules/staff/hr/pages/HRTasks'));
-const HRDocuments = lazy(
-  () => import('@/modules/staff/hr/pages/HRDocuments'),
-);
+const HRDocuments = lazy(() => import('@/modules/staff/hr/pages/HRDocuments'));
 const HRCalendar = lazy(() => import('@/modules/staff/hr/pages/HRCalendar'));
 const HRNotifications = lazy(
   () => import('@/modules/staff/hr/pages/HRNotifications'),
@@ -371,14 +366,10 @@ const HRSecurity = lazy(() => import('@/modules/staff/hr/pages/HRSecurity'));
 /* =========================================================
    IT
 ========================================================= */
-const ITDashboard = lazy(
-  () => import('@/modules/staff/it/pages/ITDashboard'),
-);
+const ITDashboard = lazy(() => import('@/modules/staff/it/pages/ITDashboard'));
 const ITSystems = lazy(() => import('@/modules/staff/it/pages/ITSystems'));
 const ITTasks = lazy(() => import('@/modules/staff/it/pages/ITTasks'));
-const ITDocuments = lazy(
-  () => import('@/modules/staff/it/pages/ITDocuments'),
-);
+const ITDocuments = lazy(() => import('@/modules/staff/it/pages/ITDocuments'));
 const ITCalendar = lazy(() => import('@/modules/staff/it/pages/ITCalendar'));
 const ITNotifications = lazy(
   () => import('@/modules/staff/it/pages/ITNotifications'),
@@ -446,9 +437,7 @@ const UploadDocuments = lazy(
 );
 
 const IntakeForms = lazy(() => import('@/modules/portal/intake/IntakeForms'));
-const IntakeStatus = lazy(
-  () => import('@/modules/portal/intake/IntakeStatus'),
-);
+const IntakeStatus = lazy(() => import('@/modules/portal/intake/IntakeStatus'));
 const NewIntakeForm = lazy(
   () => import('@/modules/portal/intake/NewIntakeForm'),
 );
@@ -631,6 +620,7 @@ const AppRoutes = () => {
           <Route path='cases' element={<LawyerCases />} />
           <Route path='cases/create' element={<LawyerCreateCase />} />
           <Route path='cases/:id' element={<LawyerCaseDetailsPage />} />
+          <Route path='cases/:id/communication' element={<LawyerChat />} />
           <Route path='documents' element={<LawyerDocumentsPage />} />
           <Route path='documents/:id' element={<LawyerTemplatesPage />} />
           <Route path='chat' element={<LawyerChat />} />
@@ -669,6 +659,7 @@ const AppRoutes = () => {
           <Route path='cases' element={<SecretaryCasesPage />} />
           <Route path='cases/create' element={<SecretaryCreateCasePage />} />
           <Route path='cases/:id' element={<SecretaryCaseDetailsPage />} />
+          <Route path='cases/:id/communication' element={<SecretaryChat />} />
 
           {/* CALENDAR */}
           <Route path='calendar' element={<SecretaryCalendar />} />
@@ -767,8 +758,16 @@ const AppRoutes = () => {
           <Route path='dashboard' element={<ClientDashboardPage />} />
           <Route path='cases' element={<ClientCasesPage />} />
           <Route path='cases/:id' element={<ClientCaseDetailsPage />} />
+          <Route
+            path='cases/:id/communication'
+            element={<ClientCommunicationPage />}
+          />
           <Route path='calendar' element={<ClientCalendarPage />} />
           <Route path='communication' element={<ClientCommunicationPage />} />
+          <Route
+            path='communication/:caseId'
+            element={<ClientCommunicationPage />}
+          />
           <Route path='documents' element={<ClientCaseDocuments />} />
           <Route path='notifications' element={<ClientNotificationsPage />} />
           <Route path='profile' element={<ClientProfile />} />
