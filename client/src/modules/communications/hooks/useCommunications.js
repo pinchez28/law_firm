@@ -7,6 +7,7 @@ export const communicationKeys = {
   announcementInbox: ['communications', 'announcement-inbox'],
   threads: (params = {}) => ['communications', 'threads', params],
   adminThreads: (params = {}) => ['communications', 'admin-threads', params],
+  staffContacts: ['communications', 'staff-contacts'],
   secretaryCaseThreads: ['communications', 'secretary-case-threads'],
   threadMessages: (threadId) => ['communications', 'thread-messages', threadId],
   caseThread: (caseId) => ['communications', 'case-thread', caseId],
@@ -82,6 +83,12 @@ export const useStartStaffThread = () => {
     },
   });
 };
+
+export const useStaffContacts = () =>
+  useQuery({
+    queryKey: communicationKeys.staffContacts,
+    queryFn: communicationService.getStaffContacts,
+  });
 
 export const useCaseThread = (caseId) =>
   useQuery({

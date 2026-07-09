@@ -69,7 +69,7 @@ const links = [
 
   // COMMUNICATION
   {
-    name: 'Communication',
+    name: 'Staff Chat',
     path: '/lawyer/chat',
     icon: MessageSquare,
   },

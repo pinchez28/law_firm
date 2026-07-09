@@ -52,7 +52,7 @@ export const adminSidebarLinks = [
   { name: 'IT Report', path: '/admin/it-report', icon: MonitorCog },
 
   /* ================= COMMUNICATION ================= */
-  { name: 'Communication', path: '/admin/communication', icon: MessageSquare },
+  { name: 'Staff Chat', path: '/admin/communication', icon: MessageSquare },
 
   /* ================= COMPLIANCE ================= */
   { name: 'Compliance', path: '/admin/compliance', icon: ShieldCheck },

@@ -157,12 +157,12 @@ const AdminITReportPage = lazy(
 const AdminChatPage = lazy(
   () => import('@/modules/admin/communication/pages/AdminChatPage'),
 );
-const AdminAnnouncementsPage = lazy(
-  () => import('@/modules/admin/communication/pages/AdminAnnouncementsPage'),
-);
 const AdminNotificationsCenterPage = lazy(
   () =>
     import('@/modules/admin/communication/pages/AdminNotificationsCenterPage'),
+);
+const StaffInternalChatPage = lazy(
+  () => import('@/modules/staff/common/pages/StaffInternalChatPage'),
 );
 
 /* COMPLIANCE */
@@ -572,10 +572,6 @@ const AppRoutes = () => {
           {/* COMMUNICATION */}
           <Route path='communication' element={<AdminChatPage />} />
           <Route
-            path='communication/announcements'
-            element={<AdminAnnouncementsPage />}
-          />
-          <Route
             path='communication/notifications'
             element={<AdminNotificationsCenterPage />}
           />
@@ -620,7 +616,6 @@ const AppRoutes = () => {
           <Route path='cases' element={<LawyerCases />} />
           <Route path='cases/create' element={<LawyerCreateCase />} />
           <Route path='cases/:id' element={<LawyerCaseDetailsPage />} />
-          <Route path='cases/:id/communication' element={<LawyerChat />} />
           <Route path='documents' element={<LawyerDocumentsPage />} />
           <Route path='documents/:id' element={<LawyerTemplatesPage />} />
           <Route path='chat' element={<LawyerChat />} />
@@ -659,7 +654,6 @@ const AppRoutes = () => {
           <Route path='cases' element={<SecretaryCasesPage />} />
           <Route path='cases/create' element={<SecretaryCreateCasePage />} />
           <Route path='cases/:id' element={<SecretaryCaseDetailsPage />} />
-          <Route path='cases/:id/communication' element={<SecretaryChat />} />
 
           {/* CALENDAR */}
           <Route path='calendar' element={<SecretaryCalendar />} />
@@ -694,6 +688,7 @@ const AppRoutes = () => {
           <Route path='tasks' element={<AccountantTasks />} />
           <Route path='documents' element={<AccountantDocuments />} />
           <Route path='calendar' element={<AccountantCalendar />} />
+          <Route path='chat' element={<StaffInternalChatPage />} />
           <Route path='notifications' element={<AccountantNotifications />} />
           <Route path='profile' element={<AccountantProfile />} />
           <Route path='security' element={<AccountantSecurity />} />
@@ -716,6 +711,7 @@ const AppRoutes = () => {
           <Route path='tasks' element={<HRTasks />} />
           <Route path='documents' element={<HRDocuments />} />
           <Route path='calendar' element={<HRCalendar />} />
+          <Route path='chat' element={<StaffInternalChatPage />} />
           <Route path='notifications' element={<HRNotifications />} />
           <Route path='profile' element={<HRProfile />} />
           <Route path='security' element={<HRSecurity />} />
@@ -738,6 +734,7 @@ const AppRoutes = () => {
           <Route path='tasks' element={<ITTasks />} />
           <Route path='documents' element={<ITDocuments />} />
           <Route path='calendar' element={<ITCalendar />} />
+          <Route path='chat' element={<StaffInternalChatPage />} />
           <Route path='notifications' element={<ITNotifications />} />
           <Route path='profile' element={<ITProfile />} />
           <Route path='security' element={<ITSecurity />} />

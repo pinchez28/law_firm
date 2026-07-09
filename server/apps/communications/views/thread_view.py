@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.common.choices import FirmRole
 from apps.communications.choices import ChatThreadType
 from apps.communications.serializers import (
     ChatThreadSerializer,
@@ -81,6 +82,42 @@ class DirectStaffThreadListCreateView(APIView):
             {"thread": ChatThreadSerializer(thread, context={"request": request}).data},
             status=status.HTTP_201_CREATED,
         )
+
+
+class StaffContactListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not CommunicationAccessService.is_admin(request.user):
+            return Response(
+                {"detail": "Only admins can view staff contacts."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        firm = CommunicationAccessService.get_user_firm(request.user)
+        staff_members = (
+            firm.members.select_related("user")
+            .filter(
+                role__in=FirmRole.staff_roles(),
+                is_active=True,
+                user__is_active=True,
+            )
+            .order_by("role", "user__first_name", "user__last_name")
+        )
+
+        contacts = [
+            {
+                "id": str(member.user.id),
+                "full_name": member.user.full_name,
+                "email": member.user.email,
+                "phone_number": member.user.phone_number,
+                "firm_role": member.role,
+                "department": member.role,
+            }
+            for member in staff_members
+        ]
+
+        return Response({"staff": contacts}, status=status.HTTP_200_OK)
 
 
 class CaseChatThreadView(APIView):

@@ -11,6 +11,7 @@ from .thread_view import (
     ChatThreadListView,
     DirectStaffThreadListCreateView,
     SecretaryCaseThreadListView,
+    StaffContactListView,
 )
 
 __all__ = [
@@ -25,4 +26,5 @@ __all__ = [
     "ChatThreadListView",
     "DirectStaffThreadListCreateView",
     "SecretaryCaseThreadListView",
+    "StaffContactListView",
 ]

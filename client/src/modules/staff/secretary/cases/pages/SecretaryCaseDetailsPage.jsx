@@ -6,6 +6,12 @@ import SectionHeading from '@/components/ui/SectionHeading';
 import BackLink from '@/components/ui/BackLink';
 import Card from '@/components/ui/Card';
 import { formatDateTime } from '@/core/utils/dateFormatter';
+import ChatWorkspace from '@/modules/communications/components/ChatWorkspace';
+import {
+  useCaseThread,
+  useCaseMessages,
+  useSendCaseMessage,
+} from '@/modules/communications/hooks/useCommunications';
 
 import useSecretaryCaseDetails from '@/modules/staff/secretary/cases/hooks/useSecretaryCaseDetails';
 
@@ -13,6 +19,9 @@ export default function SecretaryCaseDetailsPage() {
   const { id } = useParams();
 
   const { caseData, loading, error } = useSecretaryCaseDetails(id);
+  const caseThreadQuery = useCaseThread(id);
+  const caseMessagesQuery = useCaseMessages(id);
+  const sendCaseMessage = useSendCaseMessage();
 
   if (loading) {
     return (
@@ -41,6 +50,12 @@ export default function SecretaryCaseDetailsPage() {
   const safe = (value, fallback = 'N/A') =>
     value !== null && value !== undefined && value !== '' ? value : fallback;
   const pageTitle = safe(caseData.title, safe(caseData.case_number, 'Case Details'));
+  const caseThread = caseThreadQuery.data?.thread;
+  const caseThreads = caseThread ? [caseThread] : [];
+
+  const handleSendCaseMessage = async (body) => {
+    await sendCaseMessage.mutateAsync({ caseId: id, body });
+  };
 
   return (
     <div className='space-y-6 p-4 md:p-6 animate-fadeIn'>
@@ -156,6 +171,24 @@ export default function SecretaryCaseDetailsPage() {
           are recorded in the system.
         </p>
       </Card>
+
+      <ChatWorkspace
+        title='Client Case Communication'
+        subtitle='Case-specific client-firm communication thread.'
+        threads={caseThreads}
+        selectedThreadId={caseThread?.id}
+        onSelectThread={() => {}}
+        messages={caseMessagesQuery.data?.messages || []}
+        onSendMessage={handleSendCaseMessage}
+        isLoadingThreads={caseThreadQuery.isLoading}
+        isLoadingMessages={caseMessagesQuery.isLoading}
+        isSending={sendCaseMessage.isPending}
+        onRefresh={() => {
+          caseThreadQuery.refetch();
+          caseMessagesQuery.refetch();
+        }}
+        emptyThreadMessage='No case communication thread yet.'
+      />
     </div>
   );
 }

@@ -63,6 +63,13 @@ const communicationService = {
     return data;
   },
 
+  async getStaffContacts() {
+    const { data } = await axiosInstance.get(
+      '/admin/communications/staff-contacts/',
+    );
+    return data;
+  },
+
   async getCaseThread(caseId) {
     const { data } = await axiosInstance.get(
       `/communications/cases/${caseId}/thread/`,

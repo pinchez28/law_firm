@@ -6,6 +6,7 @@ from apps.communications.views import (
     ChatThreadDetailView,
     ChatThreadListView,
     DirectStaffThreadListCreateView,
+    StaffContactListView,
     ThreadMessagesView,
 )
 
@@ -17,6 +18,7 @@ urlpatterns = [
         name="admin-announcement-detail",
     ),
     path("staff-threads/", DirectStaffThreadListCreateView.as_view(), name="admin-staff-thread-list"),
+    path("staff-contacts/", StaffContactListView.as_view(), name="admin-staff-contact-list"),
     path("threads/", ChatThreadListView.as_view(), name="admin-communication-thread-list"),
     path(
         "threads/<uuid:thread_id>/",
